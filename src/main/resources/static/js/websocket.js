@@ -2,13 +2,13 @@
 
 //Establish the WebSocket connection and set up event handlers
 if (document.location.hostname == "localhost") {
-        // use http
-        webSocket = new WebSocket("ws://" + location.hostname + ":" + location.port
-                        + "/action/");
+	// use http
+	webSocket = new WebSocket("ws://" + location.hostname + ":" + location.port
+		+ "/action/");
 } else {
-        // we're on heroku - use https:
-        webSocket = new WebSocket("wss://" + location.hostname + ":" + location.port
-                + "/action/");
+	// we're on heroku - use https:
+	webSocket = new WebSocket("wss://" + location.hostname + ":" + location.port
+		+ "/action/");
 }
 
 // Send a heartbeat on the websocket
@@ -18,12 +18,12 @@ function heartbeat() {
 }
 
 // Requests to be send when websocket first opens
-webSocket.onopen = function() {
+webSocket.onopen = function () {
 	if (document.cookie.indexOf("USER_ID") > -1) {
 		sendGetGameStateAction();
 	}
 	window.setInterval(heartbeat, 10 * 1000);
-    sendReloadChatRequest();
+	sendReloadChatRequest();
 };
 
 // Delete all cookies and return to home screen
@@ -36,7 +36,7 @@ function deleteAllCookiesAndGoHome() {
 }
 
 // Actions to be taken when websocket is closed
-webSocket.onclose = function() {
+webSocket.onclose = function () {
 	if (document.cookie.indexOf("USER_ID") > -1) {
 		window.location.reload(true);
 	} else {
@@ -46,10 +46,10 @@ webSocket.onclose = function() {
 }
 
 // When a leave game button is pressed, return to home screen
-$(".leave-game-btn").click(function(event) {
+$(".leave-game-btn").click(function (event) {
 	var exit = {
-		requestType : "gameOver",
-		reason : "explicitExit"
+		requestType: "gameOver",
+		reason: "explicitExit"
 	};
 	webSocket.send(JSON.stringify(exit));
 	deleteAllCookiesAndGoHome();
@@ -61,167 +61,167 @@ $(".leave-game-btn").click(function(event) {
 
 function sendGetGameStateAction() {
 	var playersReq = {
-		requestType : "getGameState"
+		requestType: "getGameState"
 	};
 	webSocket.send(JSON.stringify(playersReq));
 }
 
 function sendReloadChatRequest() {
-    var chatReq = {
-        requestType: "chat",
-        logs: true
-    }
-    webSocket.send(JSON.stringify(chatReq));
+	var chatReq = {
+		requestType: "chat",
+		logs: true
+	}
+	webSocket.send(JSON.stringify(chatReq));
 }
 
 function sendGetInitialStateAction() {
 	var stateReq = {
-		requestType : "action",
-		action : "getInitialState"
+		requestType: "action",
+		action: "getInitialState"
 	};
 	webSocket.send(JSON.stringify(stateReq));
 }
 
 function sendRollDiceAction() {
 	var rollDiceReq = {
-		requestType : "action",
-		action : "rollDice",
-		player : playerId
+		requestType: "action",
+		action: "rollDice",
+		player: playerId
 	};
 	webSocket.send(JSON.stringify(rollDiceReq));
 }
 
 function sendBuildSettlementAction(intersectCoordinates) {
 	var buildReq = {
-		requestType : "action",
-		action : "buildSettlement",
-		coordinate : intersectCoordinates
+		requestType: "action",
+		action: "buildSettlement",
+		coordinate: intersectCoordinates
 	};
 	webSocket.send(JSON.stringify(buildReq));
 }
 
 function sendPlaceSettlementAction(intersectCoordinates) {
 	var placeReq = {
-		requestType : "action",
-		action : "placeSettlement",
-		coordinate : intersectCoordinates
+		requestType: "action",
+		action: "placeSettlement",
+		coordinate: intersectCoordinates
 	};
 	webSocket.send(JSON.stringify(placeReq));
 }
 
 function sendBuildCityAction(intersectCoordinates) {
 	var buildReq = {
-		requestType : "action",
-		action : "buildCity",
-		coordinate : intersectCoordinates
+		requestType: "action",
+		action: "buildCity",
+		coordinate: intersectCoordinates
 	};
 	webSocket.send(JSON.stringify(buildReq));
 }
 
 function sendBuildRoadAction(start, end) {
 	var buildReq = {
-		requestType : "action",
-		action : "buildRoad",
-		start : start,
-		end : end
+		requestType: "action",
+		action: "buildRoad",
+		start: start,
+		end: end
 	};
 	webSocket.send(JSON.stringify(buildReq));
 }
 
 function sendPlaceRoadAction(start, end) {
 	var placeReq = {
-		requestType : "action",
-		action : "placeRoad",
-		start : start,
-		end : end
+		requestType: "action",
+		action: "placeRoad",
+		start: start,
+		end: end
 	};
 	webSocket.send(JSON.stringify(placeReq));
 }
 
 function sendBuyDevCardAction() {
 	var buyReq = {
-		requestType : "action",
-		action : "buyDevCard"
+		requestType: "action",
+		action: "buyDevCard"
 	};
 	webSocket.send(JSON.stringify(buyReq));
 }
 
 function sendPlayKnightAction() {
 	var playReq = {
-		requestType : "action",
-		action : "playKnight"
+		requestType: "action",
+		action: "playKnight"
 	};
 	webSocket.send(JSON.stringify(playReq));
 }
 
 function sendPlayMonopolyAction(resource) {
 	var playReq = {
-		requestType : "action",
-		action : "playMonopoly",
-		resource : resource
+		requestType: "action",
+		action: "playMonopoly",
+		resource: resource
 	};
 	webSocket.send(JSON.stringify(playReq));
 }
 
 function sendPlayYearOfPlentyAction(resources) {
 	var playReq = {
-		requestType : "action",
-		action : "playYearOfPlenty",
-		resources : resources
+		requestType: "action",
+		action: "playYearOfPlenty",
+		resources: resources
 	};
 	webSocket.send(JSON.stringify(playReq));
 }
 
 function sendPlayRoadBuildingAction() {
 	var playReq = {
-		requestType : "action",
-		action : "playRoadBuilding"
+		requestType: "action",
+		action: "playRoadBuilding"
 	};
 	webSocket.send(JSON.stringify(playReq));
 }
 
 function sendDropCardsAction(toDrop) {
 	var dropReq = {
-		requestType : "action",
-		action : "dropCards",
-		toDrop : toDrop
+		requestType: "action",
+		action: "dropCards",
+		toDrop: toDrop
 	};
 	webSocket.send(JSON.stringify(dropReq));
 }
 
 function sendMoveRobberAction(coord) {
 	var dropReq = {
-		requestType : "action",
-		action : "moveRobber",
-		newLocation : coord
+		requestType: "action",
+		action: "moveRobber",
+		newLocation: coord
 	};
 	webSocket.send(JSON.stringify(dropReq));
 }
 
 function sendTakeCardAction(playerId) {
 	var takeReq = {
-		requestType : "action",
-		action : "takeCard",
-		takeFrom : playerId
+		requestType: "action",
+		action: "takeCard",
+		takeFrom: playerId
 	};
 	webSocket.send(JSON.stringify(takeReq));
 }
 
 function sendTradeWithBankAction(toGive, toGet, amount) {
 	var tradeReq = {
-		requestType : "action",
-		action : "tradeWithBank",
-		toGive : toGive,
-		toGet : toGet,
-		amount : amount
+		requestType: "action",
+		action: "tradeWithBank",
+		toGive: toGive,
+		toGet: toGet,
+		amount: amount
 	};
 	webSocket.send(JSON.stringify(tradeReq));
 }
 
 function startSetupAction() {
 	var startReq = {
-		requestType : "action",
-		action : "startSetup"
+		requestType: "action",
+		action: "startSetup"
 	};
 	webSocket.send(JSON.stringify(startReq));
 }
@@ -230,139 +230,139 @@ function startSetupAction() {
 
 function sendPlaceKnightAction(intersectCoordinates) {
 	var req = {
-		requestType : "action",
-		action : "placeKnight",
-		coordinate : intersectCoordinates
+		requestType: "action",
+		action: "placeKnight",
+		coordinate: intersectCoordinates
 	};
 	webSocket.send(JSON.stringify(req));
 }
 
 function sendActivateKnightAction(intersectCoordinates) {
 	var req = {
-		requestType : "action",
-		action : "activateKnight",
-		coordinate : intersectCoordinates
+		requestType: "action",
+		action: "activateKnight",
+		coordinate: intersectCoordinates
 	};
 	webSocket.send(JSON.stringify(req));
 }
 
 function sendPromoteKnightAction(intersectCoordinates) {
 	var req = {
-		requestType : "action",
-		action : "promoteKnight",
-		coordinate : intersectCoordinates
+		requestType: "action",
+		action: "promoteKnight",
+		coordinate: intersectCoordinates
 	};
 	webSocket.send(JSON.stringify(req));
 }
 
 function sendBuildCityWallAction(intersectCoordinates) {
 	var req = {
-		requestType : "action",
-		action : "buildCityWall",
-		coordinate : intersectCoordinates
+		requestType: "action",
+		action: "buildCityWall",
+		coordinate: intersectCoordinates
 	};
 	webSocket.send(JSON.stringify(req));
 }
 
 function sendImproveCityTrackAction(track) {
 	var req = {
-		requestType : "action",
-		action : "improveCityTrack",
-		track : track
+		requestType: "action",
+		action: "improveCityTrack",
+		track: track
 	};
 	webSocket.send(JSON.stringify(req));
 }
 
 function sendEndTurnAction() {
 	var endReq = {
-		requestType : "action",
-		action : "endTurn"
+		requestType: "action",
+		action: "endTurn"
 	};
 	webSocket.send(JSON.stringify(endReq));
 }
 
 function sendKnightOrDiceAction(choseKnight) {
 	var playReq = {
-		requestType : "action",
-		action : "knightOrDice",
-		choseKnight : choseKnight
+		requestType: "action",
+		action: "knightOrDice",
+		choseKnight: choseKnight
 	};
 	webSocket.send(JSON.stringify(playReq));
 }
 
 function sendProposeTradeAction(trade) {
 	var tradeReq = {
-		requestType : "action",
-		action : "proposeTrade",
-		trade : trade
+		requestType: "action",
+		action: "proposeTrade",
+		trade: trade
 	};
 	webSocket.send(JSON.stringify(tradeReq));
 }
 
 function sendReviewTradeAction(tradeAccepted) {
 	var tradeReq = {
-		requestType : "action",
-		action : "reviewTrade",
-		tradeAccepted : tradeAccepted
+		requestType: "action",
+		action: "reviewTrade",
+		tradeAccepted: tradeAccepted
 	};
 	webSocket.send(JSON.stringify(tradeReq));
 }
 
 function sendTradeResponseAction(accepted, trader, tradee) {
 	var tradeReq = {
-		requestType : "action",
-		action : "tradeResponse",
-		tradeAccepted : accepted,
-		trader : trader,
-		tradee : tradee
+		requestType: "action",
+		action: "tradeResponse",
+		tradeAccepted: accepted,
+		trader: trader,
+		tradee: tradee
 	};
 	webSocket.send(JSON.stringify(tradeReq));
 }
 
 function sendUpdateResourceAction() {
 	var updateReq = {
-		requestType : "action",
-		action : "updateResource"
+		requestType: "action",
+		action: "updateResource"
 	};
 	webSocket.send(JSON.stringify(updateReq));
 }
 
 // ---------- RESPONSES ---------- //
 
-webSocket.onmessage = function(msg) {
+webSocket.onmessage = function (msg) {
 	console.log(msg);
 	var data = JSON.parse(msg.data);
 	console.log(data);
 
 	if (data.hasOwnProperty("requestType")) {
 		switch (data.requestType) {
-		case "chat":
-            handleChatResponse(data);
-			break;
-		case "getGameState":
-			handleGetGameState(data);
-			break;
-		case "action":
-			handleActionResponse(data);
-			break;
-		case "setCookie":
-			handleSetCookie(data);
-			break;
-		case "ERROR":
-			handleErrorFromSocket(data);
-			break;
-		case "disconnectedUsers":
-			handleDisconnectedUsers(data);
-			break;
-		case "gameOver":
-			handleGameOver(data);
-			break;
-		case "heartbeat":
-			// console.log("heartbeat acknowledged");
-			break;
-		default:
-			console.log("unsupported request type");
-			break;
+			case "chat":
+				handleChatResponse(data);
+				break;
+			case "getGameState":
+				handleGetGameState(data);
+				break;
+			case "action":
+				handleActionResponse(data);
+				break;
+			case "setCookie":
+				handleSetCookie(data);
+				break;
+			case "ERROR":
+				handleErrorFromSocket(data);
+				break;
+			case "disconnectedUsers":
+				handleDisconnectedUsers(data);
+				break;
+			case "gameOver":
+				handleGameOver(data);
+				break;
+			case "heartbeat":
+				// console.log("heartbeat acknowledged");
+				break;
+			default:
+				console.log("unsupported request type");
+				break;
 		}
 	} else {
 		console.log("No request type indicated for response");
@@ -379,8 +379,8 @@ var chatReceivedSound = new Audio("audio/message-received.mp3");
 function sendMessage(message) {
 	if (message !== "") {
 		var pack = {
-			"requestType" : "chat",
-			"message" : message
+			"requestType": "chat",
+			"message": message
 		};
 		webSocket.send(JSON.stringify(pack));
 		id("message").value = "";
@@ -392,14 +392,14 @@ function sendMessage(message) {
  * @param msg - the message to insert
  */
 function insertChatMessage(msg) {
-    var formattedDate = moment(msg.timeStamp).format("LT");
-    var fromPlayer = playersById[msg.userId];
-    insert("chat", "<div style='border-left-color: " + fromPlayer.color
-            + "'><article><b>" + msg.sender + ":</b><p class='msg-content'>" 
-            + "</p><span class='timestamp'>" + formattedDate + "</span></article></div>");
-    $(".msg-content").text(msg.content);
-    $(".msg-content").removeClass("msg-content");
-    $("#chat").scrollTop($("#chat")[0].scrollHeight);
+	var formattedDate = moment(msg.timeStamp).format("LT");
+	var fromPlayer = playersById[msg.userId];
+	insert("chat", "<div style='border-left-color: " + fromPlayer.color
+		+ "'><article><b>" + msg.sender + ":</b><p class='msg-content'>"
+		+ "</p><span class='timestamp'>" + formattedDate + "</span></article></div>");
+	$(".msg-content").text(msg.content);
+	$(".msg-content").removeClass("msg-content");
+	$("#chat").scrollTop($("#chat")[0].scrollHeight);
 }
 
 /*
@@ -410,7 +410,7 @@ function updateChat(msg) {
 	if (msg.hasOwnProperty('ERROR')) {
 		alert(msg.ERROR);
 	} else {
-        insertChatMessage(msg);
+		insertChatMessage(msg);
 		if (!muted) {
 			chatReceivedSound.play();
 		}
@@ -422,9 +422,9 @@ function updateChat(msg) {
  * @param logs - an array of chat messages to display
  */
 function loadChatLogs(logs) {
-    for (var i = 0; i < logs.length; i++) {
-        insertChatMessage(logs[i]);
-    }
+	for (var i = 0; i < logs.length; i++) {
+		insertChatMessage(logs[i]);
+	}
 }
 
 // ////////////////////////////////////////
@@ -436,11 +436,11 @@ function loadChatLogs(logs) {
  * @param data - the chat data
  */
 function handleChatResponse(data) {
-    if (data.hasOwnProperty("logs")) {
-        loadChatLogs(data.logs);
-    } else {
-        updateChat(data);
-    }
+	if (data.hasOwnProperty("logs")) {
+		loadChatLogs(data.logs);
+	} else {
+		updateChat(data);
+	}
 }
 
 /*
@@ -452,18 +452,30 @@ function handleActionResponse(data) {
 		addMessage(data.content.message);
 	}
 
+	// Check for dice data (C&K or Base game)
+	if (data.content.hasOwnProperty("data") && data.content.data != null) {
+		if (data.content.data.hasOwnProperty("redDie")) {
+			// It's a C&K roll or we updated base game to send this
+			updateDiceDisplay(data.content.data.redDie, data.content.data.whiteDie, data.content.data.eventDie);
+		} else if (data.content.data.hasOwnProperty("diceRoll")) {
+			// Fallback for base game if we didn't send separate dice? 
+			// Actually base game RollDice doesn't send data yet, just message. 
+			// But my RollDice refactor sends red/white for everyone.
+		}
+	}
+
 	switch (data.action) {
-	case "startGame":
-		showStartGameDialogue(data.content);
-		break
-	case "tradeResponse":
-		exitReviewTradeModal();
-        break;
-    case "reviewTrade":
-        handleReviewTradeAction(data.content.data.allDeclined);
-        break;
-	default:
-		break;
+		case "startGame":
+			showStartGameDialogue(data.content);
+			break
+		case "tradeResponse":
+			exitReviewTradeModal();
+			break;
+		case "reviewTrade":
+			handleReviewTradeAction(data.content.data.allDeclined);
+			break;
+		default:
+			break;
 	}
 }
 
@@ -472,16 +484,16 @@ function handleActionResponse(data) {
  * @param data - the game over data
  */
 function handleGameOver(data) {
-	switch(data.reason) {
-	case "disconnectedUser":
-		deleteAllCookiesAndGoHome();
-		break;
-	case "explicitExit":
-        $("#user-exited-name").text(data.departedUser.userName);
-        $("#user-exited-modal").modal("show");
-		break;
-	default:
-		console.log("UNSUPPORTED REASON FOR GAME OVER");
+	switch (data.reason) {
+		case "disconnectedUser":
+			deleteAllCookiesAndGoHome();
+			break;
+		case "explicitExit":
+			$("#user-exited-name").text(data.departedUser.userName);
+			$("#user-exited-modal").modal("show");
+			break;
+		default:
+			console.log("UNSUPPORTED REASON FOR GAME OVER");
 	}
 
 }
@@ -494,40 +506,40 @@ $("#user-exited-go-home-btn").click(deleteAllCookiesAndGoHome);
  */
 function handleFollowUp(action) {
 	if (action.hasOwnProperty("actionData")
-			&& action.actionData.hasOwnProperty("message")) {
+		&& action.actionData.hasOwnProperty("message")) {
 		addMessage(action.actionData.message);
 	}
 
 	switch (action.actionName) {
-	case "moveRobber":
-		highlightRobbableTiles();
-		break
-	case "dropCards":
-		enterDiscardModal(action.actionData.numToDrop);
-		break;
-	case "takeCard":
-		enterTakeCardModal(action.actionData.toTake);
-		break;
-	case "placeRoad":
-		enterPlaceRoadMode();
-		break;
-	case "placeSettlement":
-		enterPlaceSettlementMode();
-		break;
-	case "rollDice":
-		showRollDiceModal();
-		break;
-	case "knightOrDice":
-		showKnightOrDiceModal();
-		break;
-	case "reviewTrade":
-		showReviewTradeModal(action.actionData.trade);
-		break;
-	case "tradeResponse":
-		showTradeResponseModal(action.actionData.trade);
-		break;
-	default:
-		break;
+		case "moveRobber":
+			highlightRobbableTiles();
+			break
+		case "dropCards":
+			enterDiscardModal(action.actionData.numToDrop);
+			break;
+		case "takeCard":
+			enterTakeCardModal(action.actionData.toTake);
+			break;
+		case "placeRoad":
+			enterPlaceRoadMode();
+			break;
+		case "placeSettlement":
+			enterPlaceSettlementMode();
+			break;
+		case "rollDice":
+			showRollDiceModal();
+			break;
+		case "knightOrDice":
+			showKnightOrDiceModal();
+			break;
+		case "reviewTrade":
+			showReviewTradeModal(action.actionData.trade);
+			break;
+		case "tradeResponse":
+			showTradeResponseModal(action.actionData.trade);
+			break;
+		default:
+			break;
 	}
 }
 
@@ -545,7 +557,7 @@ function handleGetGameState(gameStateData) {
 
 	var activePlayerTab = $("#player-tabs .active").attr("player");
 	openedPlayerTab = (activePlayerTab == undefined) ? 0
-			: parseInt(activePlayerTab);
+		: parseInt(activePlayerTab);
 
 	// Create players
 	playersById = {};
@@ -620,7 +632,7 @@ function handleGetGameState(gameStateData) {
 }
 
 // Send message if enter is pressed in the input field
-id("message").addEventListener("keypress", function(e) {
+id("message").addEventListener("keypress", function (e) {
 	if (e.keyCode === 13) {
 		sendMessage(e.target.value);
 	}
@@ -657,25 +669,25 @@ function handleSetCookie(data) {
 function handleErrorFromSocket(data) {
 	if (data.hasOwnProperty("description")) {
 		switch (data.description) {
-		case "RESET":
-			deleteAllCookiesAndGoHome();
-			break;
-		case "NOT_REGISTERED":
-			alert("Internal error : user not registered");
-			break;
-		case "FULL_GAME":
-			$("#full-game-modal").modal("show");
-			break;
-		case "DUPLICATE_TAB":
-			$("#duplicate-tab-modal").modal("show");
-			break;
-		default:
-			console.log(data.description);
+			case "RESET":
+				deleteAllCookiesAndGoHome();
+				break;
+			case "NOT_REGISTERED":
+				alert("Internal error : user not registered");
+				break;
+			case "FULL_GAME":
+				$("#full-game-modal").modal("show");
+				break;
+			case "DUPLICATE_TAB":
+				$("#duplicate-tab-modal").modal("show");
+				break;
+			default:
+				console.log(data.description);
 		}
 	}
 }
 
-$("#accept-full-game-btn").click(function(event) {
+$("#accept-full-game-btn").click(function (event) {
 	$("#full-game-modal").modal("hide");
 	deleteAllCookiesAndGoHome();
 });

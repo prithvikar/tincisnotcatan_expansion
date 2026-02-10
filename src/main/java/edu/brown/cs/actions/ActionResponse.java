@@ -47,4 +47,13 @@ public class ActionResponse {
     return message;
   }
 
+  /**
+   * Getter for data.
+   * 
+   * @return data.
+   */
+  public Object getData() {
+    return data;
+  }
+
 }

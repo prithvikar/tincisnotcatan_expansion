@@ -20,6 +20,8 @@ import edu.brown.cs.actions.FollowUpAction;
 import edu.brown.cs.board.Board;
 import edu.brown.cs.board.BoardTile;
 import edu.brown.cs.board.Building;
+import edu.brown.cs.board.City;
+import edu.brown.cs.catan.CityImprovement;
 import edu.brown.cs.board.HexCoordinate;
 import edu.brown.cs.board.Intersection;
 import edu.brown.cs.board.IntersectionCoordinate;
@@ -86,7 +88,7 @@ public class CatanConverter {
           .getID() : -1;
       this.hand = new Hand(ref.getPlayerByID(playerID),
           ref.getGameSettings().isCitiesAndKnights);
-      this.board = new BoardRaw(ref.getReadOnlyReferee(), ref.getBoard(),
+      this.board = new BoardRaw(ref, ref.getBoard(),
           playerID);
       this.turnOrder = (ref.getGameStatus() != GameStatus.WAITING) ? ref
           .getTurnOrder() : null;
@@ -161,8 +163,45 @@ public class CatanConverter {
 
     public BoardRaw(Referee ref, Board board, int playerID) {
       intersections = new ArrayList<>();
+      Map<IntersectionCoordinate, String> metropolisMap = new HashMap<>();
+      
+      // Calculate metropolises if C&K
+      if (ref.getGameSettings().isCitiesAndKnights && ref instanceof MasterReferee) {
+          MasterReferee mr = (MasterReferee) ref;
+          // Group cities by player
+          Map<Integer, List<Intersection>> playerCities = new HashMap<>();
+          for (Intersection i : board.getIntersections().values()) {
+              if (i.getBuilding() != null && i.getBuilding() instanceof City) {
+                  int owner = i.getBuilding().getPlayer().getID();
+                  if (!playerCities.containsKey(owner)) {
+                      playerCities.put(owner, new ArrayList<>());
+                  }
+                  playerCities.get(owner).add(i);
+              }
+          }
+          
+          // Assign metropolises
+          for (Map.Entry<Integer, List<Intersection>> entry : playerCities.entrySet()) {
+              int pid = entry.getKey();
+              List<Intersection> cities = entry.getValue();
+              // Sort consistently
+              cities.sort((a, b) -> a.getPosition().toString().compareTo(b.getPosition().toString()));
+              
+              // Check owned metropolises
+              List<String> ownedMetros = new ArrayList<>();
+              if (Integer.valueOf(pid).equals(mr.getMetropolisOwner(CityImprovement.Track.TRADE))) ownedMetros.add("trade");
+              if (Integer.valueOf(pid).equals(mr.getMetropolisOwner(CityImprovement.Track.POLITICS))) ownedMetros.add("politics");
+              if (Integer.valueOf(pid).equals(mr.getMetropolisOwner(CityImprovement.Track.SCIENCE))) ownedMetros.add("science");
+              
+              for (int j = 0; j < Math.min(cities.size(), ownedMetros.size()); j++) {
+                  metropolisMap.put(cities.get(j).getPosition(), ownedMetros.get(j));
+              }
+          }
+      }
+
       for (Intersection intersection : board.getIntersections().values()) {
-        intersections.add(new IntersectionRaw(intersection, ref, playerID));
+        String metro = metropolisMap.get(intersection.getPosition());
+        intersections.add(new IntersectionRaw(intersection, ref, playerID, metro));
       }
       paths = new ArrayList<>();
       for (Path path : board.getPaths().values()) {
@@ -205,12 +244,14 @@ public class CatanConverter {
 
     private int player;
     private final String type;
+    private final String metropolis;
 
-    BuildingRaw(Building building) {
+    BuildingRaw(Building building, String metropolis) {
       if (building.getPlayer() != null) {
         player = building.getPlayer().getID();
       }
       type = building.getClass().getSimpleName().toLowerCase();
+      this.metropolis = metropolis;
     }
 
     @Override
@@ -235,8 +276,8 @@ public class CatanConverter {
     private final IntersectionCoordinate coordinate;
     private final boolean canBuildSettlement;
 
-    IntersectionRaw(Intersection i, Referee ref, int playerID) {
-      building = i.getBuilding() != null ? new BuildingRaw(i.getBuilding())
+    IntersectionRaw(Intersection i, Referee ref, int playerID, String metropolis) {
+      building = i.getBuilding() != null ? new BuildingRaw(i.getBuilding(), metropolis)
           : null;
       port = i.getPort();
       coordinate = i.getPosition();

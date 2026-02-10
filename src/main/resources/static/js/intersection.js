@@ -24,21 +24,21 @@ var BUILDING = {
  * @param coord3 - the coordinate of the third adjacent tile
  */
 function Intersection(coord1, coord2, coord3) {
-	this.intersectCoordinates = {coord1: coord1, coord2: coord2, coord3: coord3};
+	this.intersectCoordinates = { coord1: coord1, coord2: coord2, coord3: coord3 };
 	this.coordinates = findCenter(coord1, coord2, coord3);
-	this.id = ("intersection-x-" + this.coordinates.x + "y-" 
-			+ this.coordinates.y + "z-" + this.coordinates.z).replace(/[.]/g, "_");
+	this.id = ("intersection-x-" + this.coordinates.x + "y-"
+		+ this.coordinates.y + "z-" + this.coordinates.z).replace(/[.]/g, "_");
 
 	this.building = BUILDING.NONE;
 	this.player;
 
 	this.port = PORT.NONE;
-	
+
 	this.highlighted = false;
 	this.canBuildSettlement;
-	
+
 	$("#board-viewport").append("<div class='intersection-select circle' id='" + this.id + "-select'></div>");
-	$("#board-viewport").append("<div class='intersection' id='" + this.id  + "'></div>");
+	$("#board-viewport").append("<div class='intersection' id='" + this.id + "'></div>");
 }
 
 /*
@@ -47,62 +47,74 @@ function Intersection(coord1, coord2, coord3) {
  * @param transY - the y translation of the board
  * @param scale - the scale to draw at
  */
-Intersection.prototype.draw = function(transX, transY, scale) {
+Intersection.prototype.draw = function (transX, transY, scale) {
 	var displacement = hexToCartesian(this.coordinates);
-		
+
 	var element = $("#" + this.id);
 	element.empty();
-		
-	switch(this.building) {
-	case BUILDING.SETTLEMENT:
-		var size = scale * SETTLEMENT_SCALE;
-		var x = transX + displacement.x * scale + Math.sqrt(3) * scale / 4 - size / 4;
-		var y = transY + displacement.y * scale + scale / 4 - size / 2;
 
-		// Move intersection to correct location and set size
-		element.append(SETTLEMENT_SVG);
-		element.css("transform", "translate(" + x + "px, " + y + "px)");
-		element.attr("height", size);
-		element.attr("width", size);
-		
-		// Scale svg element
-		var svg = element[0].getElementsByTagName("svg")[0];
-		svg.setAttribute("viewBox", "0 0 " + SETTLEMENT_SVG_WIDTH + " " + SETTLEMENT_SVG_WIDTH);
-		svg.setAttribute("height", size);
-		svg.setAttribute("width", size);
-		
-		// Set fill of svg element
-		var svg2 = $("#" + this.id).children().first();
-		svg2.css("fill", this.player.color);
-		break;
-	case BUILDING.CITY:
-		var size = scale * CITY_SCALE;
-		var x = transX + displacement.x * scale + Math.sqrt(3) * scale / 4 - size / 4;
-		var y = transY + displacement.y * scale + scale / 4 - size / 2;
-		
-		element.append(CITY_SVG);
-		element.css("transform", "translate(" + x + "px, " + y + "px)");
-		element.attr("height", size);
-		element.attr("width", size);
-		
-		var svg = element[0].getElementsByTagName("svg")[0];
-		svg.setAttribute("viewBox", "0 0 " + CITY_SVG_WIDTH + " " + CITY_SVG_WIDTH);
-		svg.setAttribute("height", size);
-		svg.setAttribute("width", size);
-		
-		var svg2 = $("#" + this.id).children().first();
-		svg2.css("fill", this.player.color);
-		
-		break;
-	default:
-		break;
+	switch (this.building) {
+		case BUILDING.SETTLEMENT:
+			var size = scale * SETTLEMENT_SCALE;
+			var x = transX + displacement.x * scale + Math.sqrt(3) * scale / 4 - size / 4;
+			var y = transY + displacement.y * scale + scale / 4 - size / 2;
+
+			// Move intersection to correct location and set size
+			element.append(SETTLEMENT_SVG);
+			element.css("transform", "translate(" + x + "px, " + y + "px)");
+			element.attr("height", size);
+			element.attr("width", size);
+
+			// Scale svg element
+			var svg = element[0].getElementsByTagName("svg")[0];
+			svg.setAttribute("viewBox", "0 0 " + SETTLEMENT_SVG_WIDTH + " " + SETTLEMENT_SVG_WIDTH);
+			svg.setAttribute("height", size);
+			svg.setAttribute("width", size);
+
+			// Set fill of svg element
+			var svg2 = $("#" + this.id).children().first();
+			svg2.css("fill", this.player.color);
+			break;
+		case BUILDING.CITY:
+			var size = scale * CITY_SCALE;
+			var x = transX + displacement.x * scale + Math.sqrt(3) * scale / 4 - size / 4;
+			var y = transY + displacement.y * scale + scale / 4 - size / 2;
+
+			element.append(CITY_SVG);
+			element.css("transform", "translate(" + x + "px, " + y + "px)");
+			element.attr("height", size);
+			element.attr("width", size);
+
+			var svg = element[0].getElementsByTagName("svg")[0];
+			svg.setAttribute("viewBox", "0 0 " + CITY_SVG_WIDTH + " " + CITY_SVG_WIDTH);
+			svg.setAttribute("height", size);
+			svg.setAttribute("width", size);
+
+			var svg2 = $("#" + this.id).children().first();
+			svg2.css("fill", this.player.color);
+
+			if (this.metropolis) {
+				var mSize = size / 2.5;
+				var mColor = "gold";
+				if (this.metropolis === "trade") mColor = "#4CAF50"; // Green
+				else if (this.metropolis === "politics") mColor = "#2196F3"; // Blue
+				else if (this.metropolis === "science") mColor = "#FFC107"; // Yellow
+
+				// Append marker on top
+				var metroMarker = '<div style="position:absolute; top:0; right:0; width:' + mSize + 'px; height:' + mSize + 'px; background-color:' + mColor + '; border: 1px solid black; border-radius: 50%; z-index:10;" title="Metropolis: ' + this.metropolis + '"></div>';
+				element.append(metroMarker);
+			}
+
+			break;
+		default:
+			break;
 	}
-	
+
 	// Calculate size and displacement of selectable area
 	var size = scale * SELECTABLE_AREA_SCALE;
 	var x = transX + displacement.x * scale + Math.sqrt(3) * scale / 4 - size / 4 - 0.020 * scale;
 	var y = transY + displacement.y * scale + scale / 4 - size / 2;
-	
+
 	if (this.building === BUILDING.SETTLEMENT) {
 		x = x + 0.0075 * scale;
 		y = y + 0.015 * scale;
@@ -119,7 +131,7 @@ Intersection.prototype.draw = function(transX, transY, scale) {
  * Adds a settlement to this intersection.
  * @param player - the player who owns the settlement
  */
-Intersection.prototype.addSettlement = function(player) {
+Intersection.prototype.addSettlement = function (player) {
 	this.building = BUILDING.SETTLEMENT;
 	this.player = player;
 }
@@ -128,17 +140,18 @@ Intersection.prototype.addSettlement = function(player) {
  * Adds a city to this intersection.
  * @param player - the player who owns the city
  */
-Intersection.prototype.addCity = function(player) {
+Intersection.prototype.addCity = function (player, metropolis) {
 	this.building = BUILDING.CITY;
 	this.player = player;
+	this.metropolis = metropolis;
 }
 
 /*
  * Creates an intersection click handler for building cities and settlements.
  */
-Intersection.prototype.createIntersectionClickHandler = function() {
+Intersection.prototype.createIntersectionClickHandler = function () {
 	var that = this;
-	return function(event) {
+	return function (event) {
 		if (that.building === BUILDING.NONE) {
 			if (inPlaceSettlementMode) {
 				sendPlaceSettlementAction(that.intersectCoordinates);
@@ -157,13 +170,13 @@ Intersection.prototype.createIntersectionClickHandler = function() {
 /*
  * Highlights this intersection.
  */
-Intersection.prototype.highlight = function() {
+Intersection.prototype.highlight = function () {
 	if (!(this.highlighted)) {
 		this.highlighted = true;
-		
+
 		var select = $("#" + this.id + "-select");
 		select.addClass("highlighted");
-	
+
 		select.click(this.createIntersectionClickHandler());
 	}
 }
@@ -171,13 +184,13 @@ Intersection.prototype.highlight = function() {
 /*
  * Unhighlights this intersection.
  */
-Intersection.prototype.unHighlight = function() {
+Intersection.prototype.unHighlight = function () {
 	if (this.highlighted) {
 		this.highlighted = false;
-		
+
 		var select = $("#" + this.id + "-select");
 		select.removeClass("highlighted");
-	
+
 		var that = this;
 		select.off("click");
 	}
@@ -190,15 +203,15 @@ Intersection.prototype.unHighlight = function() {
 function parseIntersection(data) {
 	var position = data.coordinate;
 	var intersect = new Intersection(parseHexCoordinates(position.coord1),
-			parseHexCoordinates(position.coord2),
-			parseHexCoordinates(position.coord3))
+		parseHexCoordinates(position.coord2),
+		parseHexCoordinates(position.coord3))
 
 	if (data.hasOwnProperty("building")) {
 		var player = playersById[data.building.player];
 		if (data.building.type === "settlement") {
 			intersect.addSettlement(player);
 		} else if (data.building.type === "city") {
-			intersect.addCity(player);
+			intersect.addCity(player, data.building.metropolis);
 		}
 	}
 

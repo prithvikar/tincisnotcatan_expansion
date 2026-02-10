@@ -248,7 +248,17 @@ function fillPlayerHand(handData) {
 		pcContainer.empty();
 		if (handData.progressCards.length > 0) {
 			for (var i = 0; i < handData.progressCards.length; i++) {
-				pcContainer.append("<span class='badge ck-progress-badge'>" + handData.progressCards[i] + "</span> ");
+				var cardName = handData.progressCards[i];
+				// Create button using jQuery
+				var $btn = $("<button class='btn btn-xs btn-info progress-card-btn' style='margin-right:5px; margin-bottom:2px;' title='Play " + cardName + "'>" + cardName + "</button>");
+				// Attach click handler via closure or data attribute
+				$btn.attr("data-card", cardName);
+				$btn.click(function () {
+					var card = $(this).attr("data-card");
+					console.log("Playing progress card: " + card);
+					sendPlayProgressCardAction(card);
+				});
+				pcContainer.append($btn);
 			}
 		} else {
 			pcContainer.append("<span class='text-muted'>None</span>");

@@ -97,6 +97,9 @@ public class ImproveCityTrack implements Action {
     // Check for Metropolis at level 4
     if (newLevel >= CityImprovement.METROPOLIS_THRESHOLD) {
       playerMsg += " You may be eligible for a Metropolis!";
+      if (_ref.getGameSettings().isCitiesAndKnights && _ref instanceof edu.brown.cs.catan.MasterReferee) {
+        ((edu.brown.cs.catan.MasterReferee) _ref).updateMetropolis(_track, _player.getID());
+      }
     }
 
     ActionResponse respToPlayer = new ActionResponse(true, playerMsg, null);

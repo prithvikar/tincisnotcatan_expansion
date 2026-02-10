@@ -2,8 +2,54 @@
 
 <div id="board-viewport" class="sea-color unselectable"></div>
 
+<style>
+    .dice-container {
+        display: flex;
+        justify-content: center;
+        gap: 10px;
+        margin-bottom: 10px;
+        background: rgba(255, 255, 255, 0.8);
+        padding: 10px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+    .die {
+        width: 40px;
+        height: 40px;
+        border-radius: 6px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-weight: bold;
+        font-size: 20px;
+        border: 2px solid #333;
+        box-shadow: inset 0 0 5px rgba(0,0,0,0.2);
+    }
+    .red-die { background-color: #d32f2f; color: white; }
+    .white-die { background-color: #f5f5f5; color: black; }
+    .event-die { 
+        width: 60px; 
+        font-size: 11px; 
+        text-align: center; 
+        line-height: 1.1;
+        text-transform: uppercase;
+        color: white;
+    }
+    .event-die.green { background-color: #388E3C; } /* Trade */
+    .event-die.blue { background-color: #1976D2; } /* Politics */
+    .event-die.yellow { background-color: #FBC02D; color: black; } /* Science */
+    .event-die.ship { background-color: #212121; color: white; } /* Barbarian */
+</style>
+
 <div class="row above-board">
 	<div class="col-xs-3">
+        <!-- Dice Display -->
+        <div id="dice-display" class="dice-container hidden">
+            <div id="red-die-val" class="die red-die" title="Red Production Die">?</div>
+            <div id="white-die-val" class="die white-die" title="White Production Die">?</div>
+            <div id="event-die-val" class="die event-die" title="Event Die">?</div>
+        </div>
+
 		<div id="turn-display-container"></div>
 		<input type="button" class="btn btn-primary" id="end-turn-btn" value="End Turn"><br>
 		<div id="chat-container">
@@ -454,6 +500,12 @@
 					<div class="card-number" id="victory-point-number">0</div>
 				</li>
 			</ul>
+            
+			<!-- C&K Progress Cards -->
+			<div id="ck-progress-cards-panel" class="col-xs-12 hidden" style="margin-top: 5px; padding: 5px; border-top: 1px solid #ddd;">
+                <span style="font-weight: bold; margin-right: 5px;">Progress:</span>
+                <span id="progress-cards-container"></span>
+			</div>
 		</div>
 	</div>
 	<div class="col-xs-3"></div>

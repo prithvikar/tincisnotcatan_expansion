@@ -63,7 +63,9 @@ public class RollDice implements FollowUpAction {
     }
     Random r = new Random();
     PrimitiveIterator.OfInt rolls = r.ints(1, 7).iterator();
-    int diceRoll = rolls.nextInt() + rolls.nextInt();
+    int redDie = rolls.nextInt();
+    int whiteDie = rolls.nextInt();
+    int diceRoll = redDie + whiteDie;
     _ref.getGameStats().addRoll(diceRoll);
     Map<Integer, Map<Resource, Integer>> playerResourceCount = new HashMap<>();
     Map<Integer, ActionResponse> toRet = new HashMap<>();
@@ -198,56 +200,79 @@ public class RollDice implements FollowUpAction {
         }
       }
       // Follow up MoveRobber action:
-      _ref.addFollowUp(ImmutableList.of(new MoveRobber(_player.getID(), false, true)));
+      Collection<FollowUpAction> followUps = new ArrayList<>();
+      followUps.add(new MoveRobber(_player.getID()));
+      _ref.addFollowUp(followUps);
     }
 
-    // --- C&K: Event Die ---
-    if (_ref.getGameSettings().isCitiesAndKnights
-        && _ref instanceof MasterReferee) {
+    // --- Cities & Knights Event Die Logic ---
+    if (_ref.getGameSettings().isCitiesAndKnights) {
       MasterReferee mr = (MasterReferee) _ref;
-      int eventDie = r.nextInt(6) + 1; // 1-6
-      if (eventDie <= 3) {
-        // Ship face: advance barbarian
-        boolean attacked = mr.getBarbarianTrack().advance();
-        String barbMsg = attacked
-            ? " Barbarians have attacked!"
-            : String.format(" Barbarians advance (%d/%d).",
-                mr.getBarbarianTrack().getPosition(),
-                Settings.BARBARIAN_TRACK_LENGTH);
-        // Append event die info to all players' messages
+      // Roll the event die (1-3: Ship, 4-6: City Gate)
+      int eventRoll = r.nextInt(6) + 1;
+      String eventDie = "";
+      String gateName = ""; // For message display
+      
+      // Barbarian ship moves on 1, 2, 3
+      if (eventRoll <= 3) {
+        eventDie = "ship";
+        boolean attack = mr.getBarbarianTrack().advance();
+        String msg = " Event: Barbarian ship advanced!";
+        if (attack) {
+          msg += " Barbarians are attacking!";
+          // TODO: Implement barbarian attack resolution logic here or add follow-up
+          // For now, simple attack resolution is automatic in BarbarianTrack? 
+          // No, we need to handle defender points and pillaging.
+          // This will be a separate task, for now just notify.
+        }
         for (Integer pid : toRet.keySet()) {
           ActionResponse orig = toRet.get(pid);
+          // Merge data
+          Object existingData = orig.getData();
           JsonObject data = new JsonObject();
+          if (existingData instanceof Map) {
+             Map<?,?> m = (Map<?,?>) existingData;
+             for (Map.Entry<?,?> e : m.entrySet()) {
+                 data.addProperty(e.getKey().toString(), e.getValue().toString());
+             }
+          } else if (existingData instanceof JsonObject) {
+              JsonObject old = (JsonObject) existingData;
+              for (Map.Entry<String, com.google.gson.JsonElement> entry : old.entrySet()) {
+                  data.add(entry.getKey(), entry.getValue());
+              }
+          }
           data.addProperty("eventDie", "ship");
-          data.addProperty("barbarianPosition",
-              mr.getBarbarianTrack().getPosition());
-          data.addProperty("barbarianAttacked", attacked);
+          data.addProperty("barbarianPosition", mr.getBarbarianTrack().getPosition());
+          data.addProperty("redDie", redDie);
+          data.addProperty("whiteDie", whiteDie);
+          
           toRet.put(pid, new ActionResponse(orig.getSuccess(),
-              orig.getMessage() + barbMsg, data));
+              orig.getMessage() + msg, data));
         }
-        // TODO: resolve barbarian attack if triggered
       } else {
-        // City gate face: determine category
-        ProgressCard.Category category;
-        String gateName;
+        // City Gate (Green/Blue/Yellow) on 4, 5, 6
         CityImprovement.Track matchTrack;
-        if (eventDie == 4) {
+        ProgressCard.Category category;
+        if (eventRoll == 4) {
+          eventDie = "green"; // Trade
           category = ProgressCard.Category.TRADE;
           gateName = "Trade (green)";
           matchTrack = CityImprovement.Track.TRADE;
-        } else if (eventDie == 5) {
+        } else if (eventRoll == 5) {
+          eventDie = "blue"; // Politics
           category = ProgressCard.Category.POLITICS;
           gateName = "Politics (blue)";
           matchTrack = CityImprovement.Track.POLITICS;
         } else {
+          eventDie = "yellow"; // Science
           category = ProgressCard.Category.SCIENCE;
           gateName = "Science (yellow)";
           matchTrack = CityImprovement.Track.SCIENCE;
         }
-        // Use the red die value (die1 from the production roll)
-        // If a player's improvement level on the matching track >= red die,
+        
+        // Use the red die value (already rolled)
+        // If a player's improvement level on the matching track >= redDie,
         // they draw a progress card.
-        int redDie = r.nextInt(6) + 1; // separate red die roll
         String gateMsg = String.format(" Event: %s gate (%d).", gateName,
             redDie);
         for (Player p : _ref.getPlayers()) {
@@ -266,9 +291,24 @@ public class RollDice implements FollowUpAction {
         // Append event die info to all players' messages
         for (Integer pid : toRet.keySet()) {
           ActionResponse orig = toRet.get(pid);
+          // Merge data
+          Object existingData = orig.getData();
           JsonObject data = new JsonObject();
-          data.addProperty("eventDie", gateName);
+          if (existingData instanceof Map) {
+             Map<?,?> m = (Map<?,?>) existingData;
+             for (Map.Entry<?,?> e : m.entrySet()) {
+                 data.addProperty(e.getKey().toString(), e.getValue().toString());
+             }
+          } else if (existingData instanceof JsonObject) {
+              JsonObject old = (JsonObject) existingData;
+              for (Map.Entry<String, com.google.gson.JsonElement> entry : old.entrySet()) {
+                  data.add(entry.getKey(), entry.getValue());
+              }
+          }
+          data.addProperty("eventDie", eventDie);
           data.addProperty("redDie", redDie);
+          data.addProperty("whiteDie", whiteDie);
+          
           toRet.put(pid, new ActionResponse(orig.getSuccess(),
               orig.getMessage() + gateMsg, data));
         }

@@ -1245,3 +1245,45 @@ $("#mute-btn").click(function () {
 	muted = !($(this).hasClass("active"));
 });
 
+
+//////////////////////////////////////////
+// Dice Display
+//////////////////////////////////////////
+
+function updateDiceDisplay(red, white, event) {
+    var $display = $("#dice-display");
+    $display.removeClass("hidden");
+    
+    $(".die").removeClass("hidden"); // Ensure dice are visible
+    
+    $("#red-die-val").text(red);
+    $("#white-die-val").text(white);
+    
+    var $eventDie = $("#event-die-val");
+    $eventDie.removeClass("ship green blue yellow");
+    
+    if (event) {
+        $eventDie.show();
+        // event values: "ship", "green", "blue", "yellow"
+        $eventDie.addClass(event);
+        
+        switch (event) {
+            case "ship":
+                $eventDie.text("Ship"); // use short text for now
+                break;
+            case "green":
+                $eventDie.text("Trade");
+                break;
+            case "blue":
+                $eventDie.text("Politic");
+                break;
+            case "yellow":
+                $eventDie.text("Sci");
+                break;
+            default:
+                $eventDie.text("?");
+        }
+    } else {
+        $eventDie.hide();
+    }
+}

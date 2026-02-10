@@ -50,24 +50,17 @@ public class MasterReferee implements Referee {
   private List<ProgressCard> _scienceDeck;
   private int _merchantOwner = -1; // playerID who has the merchant, -1 if none
   private HexCoordinate _merchantHex = null; // hex where merchant is placed
+  private Map<CityImprovement.Track, Integer> _metropolisOwners;
 
   /**
    * Creates a MasterReferee. Contains all Catan game data with default game
    * settings.
    */
   public MasterReferee() {
-    _gameSettings = new GameSettings(); // Use default settings.
-    _board = new Board(_gameSettings);
-    _players = new HashMap<Integer, Player>();
-    _turnOrder = initializeTurnOrder(_gameSettings.numPlayers);
-    _bank = initializeBank(false);
-    _devCardDeck = initializeDevDeck();
-    _turn = new Turn(1, Collections.emptyMap());
-    _gameStatus = GameStatus.WAITING;
-    _setup = new Setup(getSetupOrder());
-    _gameStats = CatanStats.getGameStatsObject();
-    initCitiesAndKnights();
+    this(new GameSettings());
   }
+
+
 
   /**
    * Creates a MasterReferee. Contains all Catan game data with inputted
@@ -96,6 +89,7 @@ public class MasterReferee implements Referee {
       _tradeDeck = ProgressCard.createTradeDeck();
       _politicsDeck = ProgressCard.createPoliticsDeck();
       _scienceDeck = ProgressCard.createScienceDeck();
+      _metropolisOwners = new HashMap<>();
     }
   }
 
@@ -337,17 +331,54 @@ public class MasterReferee implements Referee {
     roadArmyPts += hasLongestRoad(id) ? LONGEST_ROAD_POINT_VAL : 0;
 
     // C&K points: defender tokens, metropolises, and merchant
+    // C&K points: defender tokens, metropolises, and merchant
     int ckPoints = 0;
     if (_gameSettings.isCitiesAndKnights) {
       ckPoints += player.getDefenderPoints() * Settings.DEFENDER_POINT_VAL;
-      // Metropolis points are tracked separately via city improvement
       // Merchant: +1 VP for the merchant owner
       if (_merchantOwner == id) {
         ckPoints += 1;
       }
+      // Metropolis: +2 VP for each metropolis owned
+      for (CityImprovement.Track t : CityImprovement.Track.values()) {
+        if (_metropolisOwners.containsKey(t) && _metropolisOwners.get(t) == id) {
+          ckPoints += Settings.METROPOLIS_POINT_VAL;
+        }
+      }
     }
 
     return settlementPoints + cityPoints + roadArmyPts + ckPoints;
+  }
+
+  /**
+   * Updates the metropolis owner for the given track.
+   * Checks if the candidate player can claim or steal the metropolis.
+   */
+  public void updateMetropolis(CityImprovement.Track track, int candidateID) {
+    Player candidate = getPlayerByID(candidateID);
+    int candidateLevel = candidate.getCityImprovement().getLevel(track);
+    
+    // Must be at least level 4 to have a metropolis
+    if (candidateLevel < CityImprovement.METROPOLIS_THRESHOLD) {
+      return;
+    }
+
+    Integer currentOwnerID = _metropolisOwners.get(track);
+    if (currentOwnerID == null) {
+      // No owner, claim it
+      _metropolisOwners.put(track, candidateID);
+    } else {
+      // Check if candidate can steal it (must have strictly higher level)
+      Player owner = getPlayerByID(currentOwnerID);
+      int ownerLevel = owner.getCityImprovement().getLevel(track);
+      if (candidateLevel > ownerLevel) {
+        _metropolisOwners.put(track, candidateID);
+      }
+    }
+  }
+
+  public Integer getMetropolisOwner(CityImprovement.Track track) {
+    return _metropolisOwners.get(track);
   }
 
   @Override
