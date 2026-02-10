@@ -226,6 +226,53 @@ function startSetupAction() {
 	webSocket.send(JSON.stringify(startReq));
 }
 
+// ---------- Cities & Knights Action Senders ---------- //
+
+function sendPlaceKnightAction(intersectCoordinates) {
+	var req = {
+		requestType : "action",
+		action : "placeKnight",
+		coordinate : intersectCoordinates
+	};
+	webSocket.send(JSON.stringify(req));
+}
+
+function sendActivateKnightAction(intersectCoordinates) {
+	var req = {
+		requestType : "action",
+		action : "activateKnight",
+		coordinate : intersectCoordinates
+	};
+	webSocket.send(JSON.stringify(req));
+}
+
+function sendPromoteKnightAction(intersectCoordinates) {
+	var req = {
+		requestType : "action",
+		action : "promoteKnight",
+		coordinate : intersectCoordinates
+	};
+	webSocket.send(JSON.stringify(req));
+}
+
+function sendBuildCityWallAction(intersectCoordinates) {
+	var req = {
+		requestType : "action",
+		action : "buildCityWall",
+		coordinate : intersectCoordinates
+	};
+	webSocket.send(JSON.stringify(req));
+}
+
+function sendImproveCityTrackAction(track) {
+	var req = {
+		requestType : "action",
+		action : "improveCityTrack",
+		track : track
+	};
+	webSocket.send(JSON.stringify(req));
+}
+
 function sendEndTurnAction() {
 	var endReq = {
 		requestType : "action",

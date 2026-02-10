@@ -1,7 +1,9 @@
 package edu.brown.cs.catan;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import edu.brown.cs.actions.CatanFormats;
@@ -31,6 +33,14 @@ public class HumanPlayer implements Player {
   private final String color;
   private int numVictoryPoints;
 
+  // Cities & Knights fields
+  private final Map<Commodity, Double> commodities;
+  private final CityImprovement cityImprovement;
+  private final List<KnightPiece> knights;
+  private final List<ProgressCard> progressCards;
+  private int defenderPoints;
+  private int cityWalls;
+
   /**
    * Creates a HumanPlayer (CatanPlayer)
    *
@@ -59,6 +69,16 @@ public class HumanPlayer implements Player {
     for (DevelopmentCard card : DevelopmentCard.values()) {
       devCards.put(card, 0);
     }
+    // Initialize Cities & Knights state:
+    this.commodities = new HashMap<>();
+    for (Commodity c : Commodity.values()) {
+      commodities.put(c, 0.0);
+    }
+    this.cityImprovement = new CityImprovement();
+    this.knights = new ArrayList<>();
+    this.progressCards = new ArrayList<>();
+    this.defenderPoints = 0;
+    this.cityWalls = 0;
   }
 
   @Override
@@ -321,6 +341,101 @@ public class HumanPlayer implements Player {
   }
 
   @Override
+  public void addVictoryPoint() {
+    numVictoryPoints++;
+  }
+
+  // --- Cities & Knights implementations ---
+
+  @Override
+  public Map<Commodity, Double> getCommodities() {
+    return Collections.unmodifiableMap(commodities);
+  }
+
+  @Override
+  public void addCommodity(Commodity commodity, double count) {
+    commodities.put(commodity,
+        CatanFormats.round(commodities.get(commodity) + count));
+  }
+
+  @Override
+  public void removeCommodity(Commodity commodity, double count) {
+    double newCount = commodities.get(commodity) - count;
+    assert newCount >= 0;
+    commodities.put(commodity, CatanFormats.round(newCount));
+  }
+
+  @Override
+  public CityImprovement getCityImprovement() {
+    return cityImprovement;
+  }
+
+  @Override
+  public List<KnightPiece> getKnights() {
+    return Collections.unmodifiableList(knights);
+  }
+
+  @Override
+  public void addKnight(KnightPiece knight) {
+    knights.add(knight);
+  }
+
+  @Override
+  public void removeKnight(KnightPiece knight) {
+    knights.remove(knight);
+  }
+
+  @Override
+  public List<ProgressCard> getProgressCards() {
+    return Collections.unmodifiableList(progressCards);
+  }
+
+  @Override
+  public void addProgressCard(ProgressCard card) {
+    progressCards.add(card);
+  }
+
+  @Override
+  public void removeProgressCard(ProgressCard card) {
+    if (!progressCards.remove(card)) {
+      throw new IllegalArgumentException(
+          String.format("Player does not have progress card %s", card));
+    }
+  }
+
+  @Override
+  public int getDefenderPoints() {
+    return defenderPoints;
+  }
+
+  @Override
+  public void addDefenderPoint() {
+    defenderPoints++;
+  }
+
+  @Override
+  public int getCityWallCount() {
+    return cityWalls;
+  }
+
+  @Override
+  public void addCityWall() {
+    if (cityWalls >= Settings.MAX_CITY_WALLS) {
+      throw new IllegalStateException("Cannot build more than "
+          + Settings.MAX_CITY_WALLS + " city walls.");
+    }
+    cityWalls++;
+  }
+
+  @Override
+  public void removeCityWall() {
+    if (cityWalls <= 0) {
+      throw new IllegalStateException("No city walls to remove.");
+    }
+    cityWalls--;
+  }
+
+  @Override
   public int hashCode() {
     final int prime = 31;
     int result = 1;
@@ -568,6 +683,38 @@ public class HumanPlayer implements Player {
       throw new UnsupportedOperationException(
           "A ReadOnlyPlayer cannot remove resource cards.");
 
+    }
+
+    // --- Cities & Knights read-only delegations ---
+
+    @Override
+    public Map<Commodity, Double> getCommodities() {
+      return _player.getCommodities();
+    }
+
+    @Override
+    public CityImprovement getCityImprovement() {
+      return _player.getCityImprovement();
+    }
+
+    @Override
+    public List<KnightPiece> getKnights() {
+      return _player.getKnights();
+    }
+
+    @Override
+    public List<ProgressCard> getProgressCards() {
+      return _player.getProgressCards();
+    }
+
+    @Override
+    public int getDefenderPoints() {
+      return _player.getDefenderPoints();
+    }
+
+    @Override
+    public int getCityWallCount() {
+      return _player.getCityWallCount();
     }
 
   }

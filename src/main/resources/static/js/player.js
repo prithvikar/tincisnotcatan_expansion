@@ -21,18 +21,26 @@ function Player(id, name, color) {
 	this.longestRoad = false;
 
 	this.hand = {};
+
+	// C&K fields
+	this.numKnights = 0;
+	this.activeKnightStrength = 0;
+	this.defenderPoints = 0;
+	this.cityWalls = 0;
+	this.cityImprovements = null;
+	this.numProgressCards = 0;
 }
 
 /*
  * Adds a tab to the players tabs with all of this player's information.
  */
-Player.prototype.addPlayerTab = function() {
+Player.prototype.addPlayerTab = function () {
 	var tabTitle = (this.id === playerId) ? "You" : "P" + this.id;
 
 	var active = (this.id === parseInt(openedPlayerTab)) ? "class='active'" : "";
 
 	$("#player-tabs").append("<li role='presentation' player='" + this.id + "' id='p" + this.id + "-tab-tab'><a href='#p" + this.id + "-tab' aria-controls='home' "
-			+ "role='tab' data-toggle='tab'>" + tabTitle + "</a></li>");
+		+ "role='tab' data-toggle='tab'>" + tabTitle + "</a></li>");
 	$("#player-tabs-content").append("<div role='tabpanel' class='tab-pane player-tab-pane' id='p" + this.id + "-tab'></div>");
 
 	// Select active tab, or the first tab if 
@@ -56,32 +64,50 @@ Player.prototype.addPlayerTab = function() {
 	if (this.hand.hasOwnProperty("victoryPoint")) {
 		victoryPointsToDisplay = victoryPointsToDisplay + this.hand.victoryPoint;
 	}
-	
+
 	tab.append("<div class='player-name text-center'><h4>" + this.name + "</h4></div>");
-	tab.append("<h4 class='text-center player-victory-points'>" + victoryPointsToDisplay 
-			+ "<img class='player-tab-vp-icon' src='images/icon-victory-point.svg' alt='Victory Point'></h4>"
-			+ "<h5 class='text-center playing-to'>Playing to " + gameSettings.winningPointCount + "</h5>");
+	tab.append("<h4 class='text-center player-victory-points'>" + victoryPointsToDisplay
+		+ "<img class='player-tab-vp-icon' src='images/icon-victory-point.svg' alt='Victory Point'></h4>"
+		+ "<h5 class='text-center playing-to'>Playing to " + gameSettings.winningPointCount + "</h5>");
 	tab.append("<div class='panel panel-default player-tab-panel'><div class='panel-heading'>"
-			+ "<h5 class='panel-title-small'>Hand</h5></div><div class='panel-body'>"
-			+ "<p><strong>Resource Cards:</strong> " + formatNumber(this.resourceCards) + "</p>"
-			+ "<p><strong>Development Cards:</strong> " + this.developmentCards + "</p>"
-			+ "<p><strong>Played Knights:</strong> " + this.playedKnights + "</p></div></div>");
+		+ "<h5 class='panel-title-small'>Hand</h5></div><div class='panel-body'>"
+		+ "<p><strong>Resource Cards:</strong> " + formatNumber(this.resourceCards) + "</p>"
+		+ "<p><strong>Development Cards:</strong> " + this.developmentCards + "</p>"
+		+ "<p><strong>Played Knights:</strong> " + this.playedKnights + "</p></div></div>");
 	tab.append("<div class='panel panel-default player-tab-panel'><div class='panel-heading'>"
-			+ "<h5 class='panel-title-small'>Remaining Buildings</h5></div><div class='panel-body'"
-			+ "<p><strong>Roads:</strong> " + this.roads + "</p>"
-			+ "<p><strong>Settlements:</strong> " + this.settlements + "</p>"
-			+ "<p><strong>Cities:</strong> " + this.cities + "</p></div></div>");
+		+ "<h5 class='panel-title-small'>Remaining Buildings</h5></div><div class='panel-body'"
+		+ "<p><strong>Roads:</strong> " + this.roads + "</p>"
+		+ "<p><strong>Settlements:</strong> " + this.settlements + "</p>"
+		+ "<p><strong>Cities:</strong> " + this.cities + "</p></div></div>");
 
 	// Add longest road banner if applicable
 	if (this.longestRoad) {
 		tab.append("<div class='longest-road-banner text-center'><h4>Longest Road"
-				+ "<img src='images/icon-road-building.svg' alt='Road Building'></h4></div>");
+			+ "<img src='images/icon-road-building.svg' alt='Road Building'></h4></div>");
 	}
 
-	// Add largest army banner if applicable
-	if (this.largestArmy) {
+	// Add largest army banner if applicable (base game only)
+	if (this.largestArmy && !gameSettings.isCitiesAndKnights) {
 		tab.append("<div class='largest-army-banner text-center'><h4>Largest Army"
-				+ "<img src='images/icon-knight.svg' alt='Knight'></h4></div>");
+			+ "<img src='images/icon-knight.svg' alt='Knight'></h4></div>");
+	}
+
+	// C&K: Show defender of Catan and city improvement info
+	if (gameSettings.isCitiesAndKnights) {
+		if (this.defenderPoints > 0) {
+			tab.append("<div class='largest-army-banner text-center'><h4>Defender of Catan: "
+				+ this.defenderPoints + " pts</h4></div>");
+		}
+		tab.append("<div class='panel panel-default player-tab-panel'><div class='panel-heading'>"
+			+ "<h5 class='panel-title-small'>Knights & Improvements</h5></div><div class='panel-body'>"
+			+ "<p><strong>Knights:</strong> " + this.numKnights + " (Strength: " + this.activeKnightStrength + ")</p>"
+			+ "<p><strong>City Walls:</strong> " + this.cityWalls + "</p>"
+			+ (this.cityImprovements ?
+				"<p><strong>Trade:</strong> Lvl " + this.cityImprovements.trade
+				+ " | <strong>Politics:</strong> Lvl " + this.cityImprovements.politics
+				+ " | <strong>Science:</strong> Lvl " + this.cityImprovements.science + "</p>" : "")
+			+ "<p><strong>Progress Cards:</strong> " + this.numProgressCards + "</p>"
+			+ "</div></div>");
 	}
 
 	// Modify color scheme to fit this player's color
@@ -96,7 +122,7 @@ Player.prototype.addPlayerTab = function() {
 	panelHeadings.css("border-color", "rgba(" + rgb + ",0.6)");
 
 	var longestRoad = $("#p" + this.id + "-tab .longest-road-banner");
-	longestRoad.css("background-color", "rgba(" + rgb  + ",0.4)");
+	longestRoad.css("background-color", "rgba(" + rgb + ",0.4)");
 	longestRoad.css("border-color", "rgba(" + rgb + ",0.6)");
 
 	var largestArmy = $("#p" + this.id + "-tab .largest-army-banner");
@@ -107,7 +133,7 @@ Player.prototype.addPlayerTab = function() {
 /*
  * Fills the appropriate sections of the turn display for this player.
  */
-Player.prototype.fillTurnDisplay = function() {
+Player.prototype.fillTurnDisplay = function () {
 	var displayContainer = $("#turn-display-container");
 	displayContainer.append("<div id='" + this.id + "-turn-square' class='turn-square'></div>");
 
@@ -146,6 +172,16 @@ function parsePlayers(playersData) {
 		player.longestRoad = playerData.longestRoad;
 		player.resourceCards = playerData.numResourceCards;
 		player.developmentCards = playerData.numDevelopmentCards;
+
+		// C&K fields
+		if (playerData.numKnights !== undefined && playerData.numKnights !== null) {
+			player.numKnights = playerData.numKnights;
+			player.activeKnightStrength = playerData.activeKnightStrength;
+			player.defenderPoints = playerData.defenderPoints;
+			player.cityWalls = playerData.cityWalls;
+			player.cityImprovements = playerData.cityImprovements;
+			player.numProgressCards = playerData.numProgressCards;
+		}
 
 		players.push(player);
 	}
@@ -191,6 +227,34 @@ function fillPlayerHand(handData) {
 
 	$("#victory-point-number").text(handData.devCards["Victory Point"]);
 	player.hand.victoryPoint = handData.devCards["Victory Point"];
+
+	// C&K: Fill commodity cards
+	if (handData.commodities) {
+		$("#paper-number").text(formatNumber(handData.commodities.PAPER || 0));
+		player.hand.paper = handData.commodities.PAPER || 0;
+
+		$("#cloth-number").text(formatNumber(handData.commodities.CLOTH || 0));
+		player.hand.cloth = handData.commodities.CLOTH || 0;
+
+		$("#coin-number").text(formatNumber(handData.commodities.COIN || 0));
+		player.hand.coin = handData.commodities.COIN || 0;
+
+		$("#ck-commodities-container").removeClass("hidden");
+	}
+
+	// C&K: Fill progress cards
+	if (handData.progressCards) {
+		var pcContainer = $("#progress-cards-container");
+		pcContainer.empty();
+		if (handData.progressCards.length > 0) {
+			for (var i = 0; i < handData.progressCards.length; i++) {
+				pcContainer.append("<span class='badge ck-progress-badge'>" + handData.progressCards[i] + "</span> ");
+			}
+		} else {
+			pcContainer.append("<span class='text-muted'>None</span>");
+		}
+		$("#ck-progress-cards-panel").removeClass("hidden");
+	}
 }
 
 /*
@@ -241,10 +305,10 @@ function fillPlayerTradeRates(rates) {
  * @return the rgb color
  */
 function hexToRgb(hex) {
-    var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-    var r = parseInt(result[1], 16);
-    var g = parseInt(result[2], 16);
-    var b = parseInt(result[3], 16);
-    return { r: r, g: g, b: b };
+	var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+	var r = parseInt(result[1], 16);
+	var g = parseInt(result[2], 16);
+	var b = parseInt(result[3], 16);
+	return { r: r, g: g, b: b };
 }
 

@@ -106,6 +106,33 @@
 							<img src="images/icon-sheep.svg" alt="Sheep">
 						</div>
 		    		</li>
+		    		<!-- C&K Build Options (hidden by default, shown via JS) -->
+		    		<li class="list-group-item ck-build-option hidden">
+				    	<input type="button" class="btn btn-default build-btn" id="place-knight-btn" value="Place Knight">
+				    	<br>
+				    	<span>1</span>
+				    	<div class="circle build-circle ore-color">
+							<img src="images/icon-ore.svg" alt="Ore">
+						</div>
+						<span>1</span>
+				    	<div class="circle build-circle sheep-color">
+							<img src="images/icon-sheep.svg" alt="Sheep">
+						</div>
+		    		</li>
+		    		<li class="list-group-item ck-build-option hidden">
+				    	<input type="button" class="btn btn-default build-btn" id="city-wall-build-btn" value="Build City Wall">
+				    	<br>
+				    	<span>2</span>
+				    	<div class="circle build-circle brick-color">
+							<img src="images/icon-brick.svg" alt="Brick">
+						</div>
+		    		</li>
+		    		<li class="list-group-item ck-build-option hidden">
+				    	<h5 style="margin-bottom:5px"><strong>City Improvements</strong></h5>
+				    	<input type="button" class="btn btn-info btn-xs ck-improve-btn" id="improve-trade-btn" value="Trade" onclick="sendImproveCityTrackAction('TRADE')">
+				    	<input type="button" class="btn btn-warning btn-xs ck-improve-btn" id="improve-politics-btn" value="Politics" onclick="sendImproveCityTrackAction('POLITICS')">
+				    	<input type="button" class="btn btn-success btn-xs ck-improve-btn" id="improve-science-btn" value="Science" onclick="sendImproveCityTrackAction('SCIENCE')">
+		    		</li>
 		    	</ul>
 		    </div>
 		    <div role="tabpanel" class="tab-pane right-tab-pane" id="trade-tab">
@@ -362,6 +389,27 @@
 						<img src="images/icon-sheep.svg" alt="Sheep">
 					</div>
 					<div class="card-number" id="sheep-number">0</div>
+				</li>
+			</ul>
+			<!-- C&K Commodities (hidden by default) -->
+			<ul class="nav navbar-nav navbar-left hidden" id="ck-commodities-container">
+				<li class="navbar-btn" style="border-left: 2px solid #666; padding-left: 8px;">
+					<div class="circle card-circle" style="background-color: #d4a574" data-toggle="tooltip" data-placement="top" title="Paper">
+						<span style="font-size:14px; font-weight:bold">P</span>
+					</div>
+					<div class="card-number" id="paper-number">0</div>
+				</li>
+				<li class="navbar-btn">
+					<div class="circle card-circle" style="background-color: #c47ac0" data-toggle="tooltip" data-placement="top" title="Cloth">
+						<span style="font-size:14px; font-weight:bold">C</span>
+					</div>
+					<div class="card-number" id="cloth-number">0</div>
+				</li>
+				<li class="navbar-btn">
+					<div class="circle card-circle" style="background-color: #ffd700" data-toggle="tooltip" data-placement="top" title="Coin">
+						<span style="font-size:14px; font-weight:bold">$</span>
+					</div>
+					<div class="card-number" id="coin-number">0</div>
 				</li>
 			</ul>
 			<ul class="nav navbar-nav navbar-right" id="hand-dev-cards">

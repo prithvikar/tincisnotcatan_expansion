@@ -9,6 +9,12 @@ import java.util.Map;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 
+import edu.brown.cs.catan.BarbarianTrack;
+import edu.brown.cs.catan.Commodity;
+import edu.brown.cs.catan.KnightPiece;
+import edu.brown.cs.catan.MasterReferee;
+import edu.brown.cs.catan.ProgressCard;
+
 import edu.brown.cs.actions.ActionResponse;
 import edu.brown.cs.actions.FollowUpAction;
 import edu.brown.cs.board.Board;
@@ -71,12 +77,15 @@ public class CatanConverter {
     private Collection<PublicPlayerRaw> players;
     private GameSettings settings;
     private GameStatsRaw stats;
+    // C&K fields (null when not in C&K mode)
+    private BarbarianTrackRaw barbarianTrack;
 
     public GameState(Referee ref, int playerID) {
       this.playerID = playerID;
       this.currentTurn = ref.currentPlayer() != null ? ref.currentPlayer()
           .getID() : -1;
-      this.hand = new Hand(ref.getPlayerByID(playerID));
+      this.hand = new Hand(ref.getPlayerByID(playerID),
+          ref.getGameSettings().isCitiesAndKnights);
       this.board = new BoardRaw(ref.getReadOnlyReferee(), ref.getBoard(),
           playerID);
       this.turnOrder = (ref.getGameStatus() != GameStatus.WAITING) ? ref
@@ -89,6 +98,11 @@ public class CatanConverter {
       this.stats = new GameStatsRaw(ref);
       for (Player p : ref.getPlayers()) {
         players.add(new PublicPlayerRaw(p, ref.getReadOnlyReferee()));
+      }
+      // C&K state
+      if (ref.getGameSettings().isCitiesAndKnights && ref instanceof MasterReferee) {
+        MasterReferee mr = (MasterReferee) ref;
+        this.barbarianTrack = new BarbarianTrackRaw(mr.getBarbarianTrack());
       }
     }
   }
@@ -119,14 +133,24 @@ public class CatanConverter {
     private boolean canBuildSettlement;
     private boolean canBuildCity;
     private boolean canBuyDevCard;
+    // C&K fields (null when not in C&K mode)
+    private Map<Commodity, Double> commodities;
+    private List<String> progressCards;
 
-    public Hand(Player player) {
+    public Hand(Player player, boolean isCK) {
       resources = player.getResources();
       devCards = player.getDevCards();
       canBuildRoad = player.canBuildRoad();
       canBuildSettlement = player.canBuildSettlement();
       canBuildCity = player.canBuildCity();
       canBuyDevCard = player.canBuyDevelopmentCard();
+      if (isCK) {
+        commodities = player.getCommodities();
+        progressCards = new ArrayList<>();
+        for (ProgressCard pc : player.getProgressCards()) {
+          progressCards.add(pc.toString());
+        }
+      }
     }
   }
 
@@ -253,6 +277,13 @@ public class CatanConverter {
     private double numResourceCards;
     private int numDevelopmentCards;
     private Map<Resource, Double> rates;
+    // C&K fields (null/0 when not in C&K mode)
+    private Integer numKnights;
+    private Integer activeKnightStrength;
+    private Integer defenderPoints;
+    private Integer cityWalls;
+    private Map<String, Integer> cityImprovements;
+    private Integer numProgressCards;
 
     public PublicPlayerRaw(Player p, Referee r) {
       name = p.getName();
@@ -268,6 +299,20 @@ public class CatanConverter {
       rates = r.getBankRates(p.getID());
       numResourceCards = p.getNumResourceCards();
       numDevelopmentCards = p.getNumDevelopmentCards();
+      if (r.getGameSettings().isCitiesAndKnights) {
+        numKnights = p.getKnights().size();
+        activeKnightStrength = p.getActiveKnightStrength();
+        defenderPoints = p.getDefenderPoints();
+        cityWalls = p.getCityWallCount();
+        cityImprovements = new HashMap<>();
+        cityImprovements.put("trade", p.getCityImprovement().getLevel(
+            edu.brown.cs.catan.CityImprovement.Track.TRADE));
+        cityImprovements.put("politics", p.getCityImprovement().getLevel(
+            edu.brown.cs.catan.CityImprovement.Track.POLITICS));
+        cityImprovements.put("science", p.getCityImprovement().getLevel(
+            edu.brown.cs.catan.CityImprovement.Track.SCIENCE));
+        numProgressCards = p.getProgressCards().size();
+      }
     }
 
   }
@@ -291,6 +336,19 @@ public class CatanConverter {
     public FollowUpActionRaw(FollowUpAction followUp) {
       actionName = followUp.getID();
       actionData = followUp.getData();
+    }
+  }
+
+  // C&K: Barbarian track state for JSON serialization
+  private static class BarbarianTrackRaw {
+    private int position;
+    private int trackLength;
+    private int attackCount;
+
+    public BarbarianTrackRaw(BarbarianTrack track) {
+      this.position = track.getPosition();
+      this.trackLength = edu.brown.cs.catan.Settings.BARBARIAN_TRACK_LENGTH;
+      this.attackCount = track.getAttackCount();
     }
   }
 }

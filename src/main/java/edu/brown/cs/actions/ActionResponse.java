@@ -38,4 +38,13 @@ public class ActionResponse {
     return success;
   }
 
+  /**
+   * Getter for message.
+   * 
+   * @return message.
+   */
+  public String getMessage() {
+    return message;
+  }
+
 }

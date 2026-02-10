@@ -3,6 +3,7 @@ package edu.brown.cs.actions;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.PrimitiveIterator;
 import java.util.Random;
@@ -11,7 +12,11 @@ import com.google.common.collect.ImmutableList;
 import com.google.gson.JsonObject;
 
 import edu.brown.cs.board.Tile;
+import edu.brown.cs.catan.BarbarianTrack;
+import edu.brown.cs.catan.CityImprovement;
+import edu.brown.cs.catan.MasterReferee;
 import edu.brown.cs.catan.Player;
+import edu.brown.cs.catan.ProgressCard;
 import edu.brown.cs.catan.Referee;
 import edu.brown.cs.catan.Resource;
 import edu.brown.cs.catan.Settings;
@@ -146,7 +151,12 @@ public class RollDice implements FollowUpAction {
       Map<Integer, JsonObject> jsonToSend = new HashMap<>();
       String message = "7 was rolled.";
       for (Player p : _ref.getPlayers()) {
-        if (p.getNumResourceCards() > Settings.DROP_CARDS_THRESH) {
+        // C&K: city walls increase the hand limit by 2 each
+        double threshold = Settings.DROP_CARDS_THRESH;
+        if (_ref.getGameSettings().isCitiesAndKnights) {
+          threshold += p.getCityWallCount() * Settings.CITY_WALL_HAND_BONUS;
+        }
+        if (p.getNumResourceCards() > threshold) {
           double numToDrop = p.getNumResourceCards() / 2.0;
           if (!_ref.getGameSettings().isDecimal) {
             numToDrop = Math.floor(numToDrop);
@@ -190,6 +200,81 @@ public class RollDice implements FollowUpAction {
       // Follow up MoveRobber action:
       _ref.addFollowUp(ImmutableList.of(new MoveRobber(_player.getID(), false, true)));
     }
+
+    // --- C&K: Event Die ---
+    if (_ref.getGameSettings().isCitiesAndKnights
+        && _ref instanceof MasterReferee) {
+      MasterReferee mr = (MasterReferee) _ref;
+      int eventDie = r.nextInt(6) + 1; // 1-6
+      if (eventDie <= 3) {
+        // Ship face: advance barbarian
+        boolean attacked = mr.getBarbarianTrack().advance();
+        String barbMsg = attacked
+            ? " Barbarians have attacked!"
+            : String.format(" Barbarians advance (%d/%d).",
+                mr.getBarbarianTrack().getPosition(),
+                Settings.BARBARIAN_TRACK_LENGTH);
+        // Append event die info to all players' messages
+        for (Integer pid : toRet.keySet()) {
+          ActionResponse orig = toRet.get(pid);
+          JsonObject data = new JsonObject();
+          data.addProperty("eventDie", "ship");
+          data.addProperty("barbarianPosition",
+              mr.getBarbarianTrack().getPosition());
+          data.addProperty("barbarianAttacked", attacked);
+          toRet.put(pid, new ActionResponse(orig.getSuccess(),
+              orig.getMessage() + barbMsg, data));
+        }
+        // TODO: resolve barbarian attack if triggered
+      } else {
+        // City gate face: determine category
+        ProgressCard.Category category;
+        String gateName;
+        CityImprovement.Track matchTrack;
+        if (eventDie == 4) {
+          category = ProgressCard.Category.TRADE;
+          gateName = "Trade (green)";
+          matchTrack = CityImprovement.Track.TRADE;
+        } else if (eventDie == 5) {
+          category = ProgressCard.Category.POLITICS;
+          gateName = "Politics (blue)";
+          matchTrack = CityImprovement.Track.POLITICS;
+        } else {
+          category = ProgressCard.Category.SCIENCE;
+          gateName = "Science (yellow)";
+          matchTrack = CityImprovement.Track.SCIENCE;
+        }
+        // Use the red die value (die1 from the production roll)
+        // If a player's improvement level on the matching track >= red die,
+        // they draw a progress card.
+        int redDie = r.nextInt(6) + 1; // separate red die roll
+        String gateMsg = String.format(" Event: %s gate (%d).", gateName,
+            redDie);
+        for (Player p : _ref.getPlayers()) {
+          int level = p.getCityImprovement().getLevel(matchTrack);
+          if (level >= redDie) {
+            ProgressCard drawn = mr.drawProgressCard(category);
+            if (drawn != null) {
+              p.addProgressCard(drawn);
+              // If it's a VP card, reveal immediately
+              if (drawn.isVictoryPoint()) {
+                p.addVictoryPoint();
+              }
+            }
+          }
+        }
+        // Append event die info to all players' messages
+        for (Integer pid : toRet.keySet()) {
+          ActionResponse orig = toRet.get(pid);
+          JsonObject data = new JsonObject();
+          data.addProperty("eventDie", gateName);
+          data.addProperty("redDie", redDie);
+          toRet.put(pid, new ActionResponse(orig.getSuccess(),
+              orig.getMessage() + gateMsg, data));
+        }
+      }
+    }
+
     _ref.removeFollowUp(this);
     return toRet;
   }

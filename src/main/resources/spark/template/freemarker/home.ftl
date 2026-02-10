@@ -79,6 +79,17 @@
 						</div>
 						<br>
 						<button id="startGameButton" class="btn btn-success" onclick="return startGamePressed()">Create Game!</button>
+						<br><br>
+						<label>Expansion</label>
+						<br>
+						<div class="btn-group" data-toggle="buttons">
+							<label class="btn btn-default active">
+								<input type="radio" autocomplete="off" checked>Base Game
+							</label>
+							<label class="btn btn-default" id="ck-expansion-option">
+								<input type="radio" autocomplete="off">Cities &amp; Knights
+							</label>
+						</div>
 					</form>
 				</div>
 			</div>

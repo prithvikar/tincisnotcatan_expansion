@@ -16,9 +16,12 @@ import java.util.Map;
 
 import edu.brown.cs.actions.FollowUpAction;
 import edu.brown.cs.board.Board;
+import edu.brown.cs.board.HexCoordinate;
 import edu.brown.cs.board.Intersection;
 import edu.brown.cs.gamestats.CatanStats;
 import edu.brown.cs.gamestats.GameStats;
+
+import java.util.AbstractMap;
 
 /**
  * An implementation of Referee that can read and write data. There should be
@@ -40,6 +43,14 @@ public class MasterReferee implements Referee {
   private final Setup _setup;
   private GameStats _gameStats;
 
+  // Cities & Knights state
+  private BarbarianTrack _barbarianTrack;
+  private List<ProgressCard> _tradeDeck;
+  private List<ProgressCard> _politicsDeck;
+  private List<ProgressCard> _scienceDeck;
+  private int _merchantOwner = -1; // playerID who has the merchant, -1 if none
+  private HexCoordinate _merchantHex = null; // hex where merchant is placed
+
   /**
    * Creates a MasterReferee. Contains all Catan game data with default game
    * settings.
@@ -55,6 +66,7 @@ public class MasterReferee implements Referee {
     _gameStatus = GameStatus.WAITING;
     _setup = new Setup(getSetupOrder());
     _gameStats = CatanStats.getGameStatsObject();
+    initCitiesAndKnights();
   }
 
   /**
@@ -75,6 +87,70 @@ public class MasterReferee implements Referee {
     _gameStatus = GameStatus.WAITING;
     _setup = new Setup(getSetupOrder());
     _gameStats = CatanStats.getGameStatsObject();
+    initCitiesAndKnights();
+  }
+
+  private void initCitiesAndKnights() {
+    if (_gameSettings.isCitiesAndKnights) {
+      _barbarianTrack = new BarbarianTrack();
+      _tradeDeck = ProgressCard.createTradeDeck();
+      _politicsDeck = ProgressCard.createPoliticsDeck();
+      _scienceDeck = ProgressCard.createScienceDeck();
+    }
+  }
+
+  /**
+   * Returns the BarbarianTrack, or null if not in C&K mode.
+   */
+  public BarbarianTrack getBarbarianTrack() {
+    return _barbarianTrack;
+  }
+
+  /**
+   * Draws a progress card from the specified category deck.
+   * Returns null if the deck is empty.
+   */
+  public ProgressCard drawProgressCard(ProgressCard.Category category) {
+    List<ProgressCard> deck;
+    switch (category) {
+    case TRADE:
+      deck = _tradeDeck;
+      break;
+    case POLITICS:
+      deck = _politicsDeck;
+      break;
+    case SCIENCE:
+      deck = _scienceDeck;
+      break;
+    default:
+      return null;
+    }
+    if (deck == null || deck.isEmpty()) {
+      return null;
+    }
+    return deck.remove(0);
+  }
+
+  /**
+   * Returns the player ID of the merchant owner, or -1 if no one owns it.
+   */
+  public int getMerchantOwner() {
+    return _merchantOwner;
+  }
+
+  /**
+   * Returns the hex where the merchant is placed, or null.
+   */
+  public HexCoordinate getMerchantHex() {
+    return _merchantHex;
+  }
+
+  /**
+   * Places the merchant on a hex and assigns ownership to a player.
+   */
+  public void setMerchant(int playerID, HexCoordinate hex) {
+    _merchantOwner = playerID;
+    _merchantHex = hex;
   }
 
   private List<Integer> getSetupOrder() {
@@ -252,9 +328,26 @@ public class MasterReferee implements Referee {
     int settlementPoints = SETTLEMENT_POINT_VAL
         * (INITIAL_SETTLEMENTS - player.numSettlements());
     int cityPoints = CITY_POINT_VAL * (INITIAL_CITIES - player.numCities());
-    int roadArmyPts = hasLargestArmy(id) ? LARGEST_ARMY_POINT_VAL : 0;
+    int roadArmyPts = 0;
+
+    // Largest Army does not exist in C&K mode
+    if (!_gameSettings.isCitiesAndKnights) {
+      roadArmyPts += hasLargestArmy(id) ? LARGEST_ARMY_POINT_VAL : 0;
+    }
     roadArmyPts += hasLongestRoad(id) ? LONGEST_ROAD_POINT_VAL : 0;
-    return settlementPoints + cityPoints + roadArmyPts;
+
+    // C&K points: defender tokens, metropolises, and merchant
+    int ckPoints = 0;
+    if (_gameSettings.isCitiesAndKnights) {
+      ckPoints += player.getDefenderPoints() * Settings.DEFENDER_POINT_VAL;
+      // Metropolis points are tracked separately via city improvement
+      // Merchant: +1 VP for the merchant owner
+      if (_merchantOwner == id) {
+        ckPoints += 1;
+      }
+    }
+
+    return settlementPoints + cityPoints + roadArmyPts + ckPoints;
   }
 
   @Override

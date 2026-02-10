@@ -9,19 +9,19 @@ var tradeRates = {};
 var gameStats = {};
 
 // Actions to take when window initially loads
-$(window).load(function() {
+$(window).load(function () {
 	// Enable tooltips and popovers
 	$(function () {
-  		$('[data-toggle="tooltip"]').tooltip();
-  		$('[data-toggle="popover"]').popover();
+		$('[data-toggle="tooltip"]').tooltip();
+		$('[data-toggle="popover"]').popover();
 	})
 
-    $("#end-turn-btn").click(sendEndTurnAction);
-    
-    var href = window.location.pathname;
-    if(href != "/home" && !document.cookie){
-    	window.location = "/home"; // redirect to home
-    }
+	$("#end-turn-btn").click(sendEndTurnAction);
+
+	var href = window.location.pathname;
+	if (href != "/home" && !document.cookie) {
+		window.location = "/home"; // redirect to home
+	}
 });
 
 // Mouse movement variables
@@ -30,7 +30,7 @@ var lastX;
 var lastY;
 
 // When mouse is pressed, start dragging mode and save current position
-$(document).on("mousedown", "#board-viewport", function(event) {
+$(document).on("mousedown", "#board-viewport", function (event) {
 	lastX = event.pageX;
 	lastY = event.pageY;
 	dragging = true;
@@ -47,7 +47,7 @@ function onMouseMove(event) {
 }
 
 // When mouse is released, do final translate and leave dragging mode
-$(document).on("mouseup mouseleave", "#board-viewport", function(event) {
+$(document).on("mouseup mouseleave", "#board-viewport", function (event) {
 	if (dragging) {
 		dragging = false;
 		board.translate(lastX - event.pageX, lastY - event.pageY);
@@ -56,7 +56,7 @@ $(document).on("mouseup mouseleave", "#board-viewport", function(event) {
 });
 
 // When mouse is scrolled, scale board
-$(document).on("wheel", "#board-viewport", function(event) {
+$(document).on("wheel", "#board-viewport", function (event) {
 	if (Math.abs(event.originalEvent.deltaY) > 0.01) {
 		var deltaScale = event.originalEvent.deltaY > 0 ? 10 : -10;
 		board.scale(deltaScale);
@@ -99,7 +99,7 @@ function getExchangeRate(toGive, toGet) {
 
 // Set up flashing tab message when it is your turn
 var yourTurnDisplayed = false;
-setInterval(function() {
+setInterval(function () {
 	// Change tab title when it is your turn
 	if (playerId === currentPlayerTurn) {
 		if (!yourTurnDisplayed) {
@@ -210,8 +210,8 @@ function exitCityMode() {
 
 	for (var i = 0; i < board.intersections.length; i++) {
 		var intersect = board.intersections[i];
-		if (intersect.building === BUILDING.SETTLEMENT 
-				&& intersect.player.id === playerId && intersect.highlighted) {
+		if (intersect.building === BUILDING.SETTLEMENT
+			&& intersect.player.id === playerId && intersect.highlighted) {
 			board.intersections[i].unHighlight();
 		}
 	}
@@ -311,7 +311,7 @@ function openMonopolyModal() {
 
 	$("#play-monopoly-btn").prop("disabled", true);
 
-	$(".monopoly-circle").click(function(event) {
+	$(".monopoly-circle").click(function (event) {
 		var element = $(event.target);
 
 		// Unhighlight previously selected resource, if one was previously selected
@@ -327,20 +327,20 @@ function openMonopolyModal() {
 		$("#play-monopoly-btn").prop("disabled", false);
 	});
 
-	$("#play-monopoly-btn").click(function(event) {
+	$("#play-monopoly-btn").click(function (event) {
 		if (selectedMonopolyResource) {
 			sendPlayMonopolyAction(selectedMonopolyResource);
 			$("#monopoly-modal").modal("hide");
 		}
 	});
 
-	$("#monopoly-modal").on("hide.bs.modal", function(event) {
+	$("#monopoly-modal").on("hide.bs.modal", function (event) {
 		// Clean up event handlers
 		$(".monopoly-circle").off("click");
 		$("#play-monopoly-btn").off("click");
 		$("#monopoly-modal").off("hide.bs.modal");
 
-	 	// Unhighlight previously selected resource, if one was previously selected
+		// Unhighlight previously selected resource, if one was previously selected
 		if (selectedElement) {
 			selectedElement.removeClass("highlighted-monopoly-circle");
 		}
@@ -350,7 +350,7 @@ function openMonopolyModal() {
 }
 
 // When the monopoly card button is clicked, display modal only if player has a monopoly card/
-$("#monopoly-btn").click(function(event) {
+$("#monopoly-btn").click(function (event) {
 	// Check that player had a monopoly card to play
 	if (playersById[playerId].hand.monopoly <= 0) {
 		addMessage("You don't have Monopoly");
@@ -369,7 +369,7 @@ function calcYearOfPlentyResources() {
 	var inputs = $(".yop-number");
 	var num = 0;
 
-	inputs.each(function(indx) {
+	inputs.each(function (indx) {
 		var text = $(this).val();
 		num = num + ((text === "") ? 0 : parseFloat(text));
 	});
@@ -378,7 +378,7 @@ function calcYearOfPlentyResources() {
 }
 
 // When a number is input for year of plenty, change displayed values and possible cap input number.
-$(".yop-number").change(function(event) {
+$(".yop-number").change(function (event) {
 	var oldVal = $(this).data("oldVal");
 	var newVal = parseFloat(formatNumber(parseFloat($(this).val())));
 
@@ -403,14 +403,14 @@ $(".yop-number").change(function(event) {
 });
 
 // When year of plenty confirm button is clicked, check current selected resources and send request.
-$("#play-yop-btn").click(function(event) {
+$("#play-yop-btn").click(function (event) {
 	var resourcesSelected = calcYearOfPlentyResources();
 	if (resourcesSelected === 2) {
 		var foundFirst = false;
 		var inputs = $(".yop-number");
 		var resources = {};
 
-		inputs.each(function(idx) {
+		inputs.each(function (idx) {
 			var num = parseFloat($(this).val());
 			num = (num === num) ? num : 0;
 
@@ -424,7 +424,7 @@ $("#play-yop-btn").click(function(event) {
 });
 
 // When year of plenty card button is clicked, show year of plenty modal only if card is in hand.
-$("#year-of-plenty-btn").click(function(event) {
+$("#year-of-plenty-btn").click(function (event) {
 	// Check that player actually year of plenty card to play
 	if (playersById[playerId].hand.yearOfPlenty <= 0) {
 		addMessage("You don't have Year of Plenty");
@@ -435,7 +435,7 @@ $("#year-of-plenty-btn").click(function(event) {
 });
 
 // When year of plenty modal is hidden, reset number inputs
-$("#year-of-plenty-modal").on("hide.bs.modal", function() {
+$("#year-of-plenty-modal").on("hide.bs.modal", function () {
 	$(".yop-number").val("");
 });
 
@@ -448,7 +448,7 @@ function calcNumDiscards() {
 	var inputs = $(".discard-number");
 	var num = 0;
 
-	inputs.each(function(indx) {
+	inputs.each(function (indx) {
 		var text = $(this).val();
 		num = num + ((text === "") ? 0 : parseFloat(text));
 	});
@@ -460,7 +460,7 @@ function calcNumDiscards() {
  * Enter the discard modal, setting up click handlers.
  * @param numToDiscard - the number of cards to discard
  */
- function enterDiscardModal(numToDiscard) {
+function enterDiscardModal(numToDiscard) {
 	$("#discard-modal").modal("show");
 	$("#num-resources-to-discard").text(numToDiscard);
 	$("#discard-btn").prop("disabled", true);
@@ -468,11 +468,13 @@ function calcNumDiscards() {
 	$("#discard-number").data("oldVal", undefined);
 
 	var playerHand = playersById[playerId].hand;
-	var currHand = {brick: playerHand.brick, 
-					wood: playerHand.wood, 
-					ore: playerHand.ore, 
-					wheat: playerHand.wheat, 
-					sheep: playerHand.sheep};
+	var currHand = {
+		brick: playerHand.brick,
+		wood: playerHand.wood,
+		ore: playerHand.ore,
+		wheat: playerHand.wheat,
+		sheep: playerHand.sheep
+	};
 	redrawHand();
 
 	function redrawHand() {
@@ -484,7 +486,7 @@ function calcNumDiscards() {
 		$("#discard-hand-number-sheep").text(formatNumber(currHand.sheep));
 	}
 
-	$(".discard-number").change(function(event) {
+	$(".discard-number").change(function (event) {
 		var oldVal = ($(this).data("oldVal") === undefined) ? 0 : $(this).data("oldVal");
 		var newVal = parseFloat(formatNumber(parseFloat($(this).val())));
 		var res = $(this).attr("res");
@@ -505,16 +507,16 @@ function calcNumDiscards() {
 				currHand[res] = currHand[res] + (cappedVal - oldVal);
 				$(this).val(cappedVal);
 			}
-		// Handle cases where you select too many resources
+			// Handle cases where you select too many resources
 		} else if (numDiscards > numToDiscard) {
 			var cappedVal = parseFloat(formatNumber(newVal + numDiscards - numToDiscard));
 			$(this).data("oldVal", cappedVal);
 			currHand[res] = currHand[res] + (cappedVal - oldVal);
 			$(this).val(cappedVal);
-		// Handle case where number is positive or input is not a number
+			// Handle case where number is positive or input is not a number
 		} else if (isNaN(newVal) || newVal > 0) {
 			$(this).val(oldVal);
-		// Regular, non-capped case
+			// Regular, non-capped case
 		} else {
 			$(this).data("oldVal", newVal);
 			currHand[res] = currHand[res] + (newVal - oldVal);
@@ -530,12 +532,12 @@ function calcNumDiscards() {
 		}
 	});
 
-	$("#discard-btn").click(function(event) {
+	$("#discard-btn").click(function (event) {
 		if (calcNumDiscards() === numToDiscard) {
 			var toDiscard = {};
 			var inputs = $(".discard-number");
 
-			inputs.each(function(indx) {
+			inputs.each(function (indx) {
 				var text = $(this).val();
 				var num = ((text === "") ? 0 : parseFloat(text));
 				var res = $(this).attr("res");
@@ -552,7 +554,7 @@ function calcNumDiscards() {
 }
 
 // When discard modal is hidden, reset number inputs.
-$("#discard-modal").on("hide.bs.modal", function() {
+$("#discard-modal").on("hide.bs.modal", function () {
 	$(".discard-number").val("");
 });
 
@@ -686,15 +688,15 @@ function enterTakeCardModal(playerIds) {
 		var player = playersById[playerIds[i]];
 		var color = "rgba(" + player.rgbColor.r + "," + player.rgbColor.g + "," + player.rgbColor.b + ",0.4)";
 		$("#take-card-players-list").append("<label class='btn btn-default' style='background-color: " + color + "'>"
-				+ "<input type='radio' name='" + player.id + "' autocomplete='off'>" + player.name + "</label>");
+			+ "<input type='radio' name='" + player.id + "' autocomplete='off'>" + player.name + "</label>");
 	}
 
-	$("#take-card-players-list").find("label").click(function(event) {
+	$("#take-card-players-list").find("label").click(function (event) {
 		toStealFrom = $(event.target);
 		$("#take-card-btn").prop("disabled", false);
 	});
 
-	$("#take-card-btn").click(function(event) {
+	$("#take-card-btn").click(function (event) {
 		sendTakeCardAction(parseInt(toStealFrom.find("input").prop("name")));
 		$("#take-card-players-list").find("label").off("click");
 		$("#take-card-btn").off("click");
@@ -712,12 +714,12 @@ function enterTakeCardModal(playerIds) {
 $("#bank-trade-btn").prop("disabled", true);
 
 var selectedToGiveElement = null;
-var selectedToGiveResource  = null;
+var selectedToGiveResource = null;
 var selectedToGetElement = null;
-var selectedToGetResource  = null;
+var selectedToGetResource = null;
 
 // Handle a to give circle being clicked
-$(".to-give-circle-container").click(function(event) {
+$(".to-give-circle-container").click(function (event) {
 	var element = $(this);
 
 	// Unhighlight previously selected resource, if one was previously selected
@@ -739,7 +741,7 @@ $(".to-give-circle-container").click(function(event) {
 });
 
 // Handle a to get circle being clicked
-$(".to-get-circle-container").click(function(event) {
+$(".to-get-circle-container").click(function (event) {
 	var element = $(this);
 
 	// Unhighlight previously selected resource, if one was previously selected
@@ -761,7 +763,7 @@ $(".to-get-circle-container").click(function(event) {
 });
 
 // When the bank trade amount is changed, update the displayed amount to give
-$("#bank-trade-amount-input").change(function(event) {
+$("#bank-trade-amount-input").change(function (event) {
 	var amount = parseFloat(formatNumber(parseFloat($("#bank-trade-amount-input").val())));
 	$("#bank-trade-amount-input").val(amount);
 	if (selectedToGiveResource !== null && selectedToGetResource !== null && amount > 0) {
@@ -771,7 +773,7 @@ $("#bank-trade-amount-input").change(function(event) {
 });
 
 // When the bank trade button is clicked, initiate a trade if all fields have been set
-$("#bank-trade-btn").click(function(event) {
+$("#bank-trade-btn").click(function (event) {
 	var amount = parseFloat($("#bank-trade-amount-input").val());
 
 	sendTradeWithBankAction(selectedToGiveResource, selectedToGetResource, amount);
@@ -781,9 +783,9 @@ $("#bank-trade-btn").click(function(event) {
 	selectedToGetElement.removeClass("highlighted-to-give-get-circle");
 
 	selectedToGiveElement = null;
-	selectedToGiveResource  = null;
+	selectedToGiveResource = null;
 	selectedToGetElement = null;
-	selectedToGetResource  = null;
+	selectedToGetResource = null;
 
 	$("#bank-trade-btn").prop("disabled", true);
 	$("#bank-trade-amount-input").val(1);
@@ -814,16 +816,16 @@ function showStartGameDialogue(content) {
 
 	if (gameSettings.isDynamic) {
 		$("#dynamic-rates-welcome-message").text("You are playing a game with Dynamic Exchange rates. "
-				+ "Bank and port rates will change dynamically based on the supply of resources in "
-				+ "the game. Acquiring ports still give you the same relative advantage as they do in "
-				+ "the classic game of Catan.");
+			+ "Bank and port rates will change dynamically based on the supply of resources in "
+			+ "the game. Acquiring ports still give you the same relative advantage as they do in "
+			+ "the classic game of Catan.");
 	}
 
 	for (var i = 0; i < turnOrder.length; i++) {
 		var player = playersById[turnOrder[i]];
 		container.append("<li><span class='welcome-list-item'>"
-				+ "<div class='welcome-inline-color' style='background-color: " + player.color + "'></div>"
-				+ player.name + "</li>");
+			+ "<div class='welcome-inline-color' style='background-color: " + player.color + "'></div>"
+			+ player.name + "</li>");
 	}
 
 	$("#welcome-modal").modal("show");
@@ -841,12 +843,12 @@ function showRollDiceModal() {
 }
 
 // When the knight option is clicked, send a request to play a knight
-$("#knight-dice-play-knight-btn").click(function(event) {
+$("#knight-dice-play-knight-btn").click(function (event) {
 	sendKnightOrDiceAction(true);
 });
 
 // When the roll dice button is clicked, send a request to roll the dice
-$("#knight-dice-roll-dice-btn").click(function(event) {
+$("#knight-dice-roll-dice-btn").click(function (event) {
 	sendKnightOrDiceAction(false);
 });
 
@@ -867,7 +869,7 @@ var timeoutInterval;
  */
 function showDisconnectedUsersModal(disconnectData) {
 	clearInterval(timeoutInterval);
-	timeoutInterval = setInterval(function() {
+	timeoutInterval = setInterval(function () {
 		var millisLeft = disconnectData.expiresAt - Date.now();
 		var secondsLeft = Math.round(millisLeft / 1000);
 
@@ -888,7 +890,7 @@ function hideDisconnectedUsersModal() {
 // Interplayer Trade Panel
 //////////////////////////////////////////
 
-var currentTrade = {brick: 0, wood: 0, ore: 0, wheat: 0, sheep: 0};
+var currentTrade = { brick: 0, wood: 0, ore: 0, wheat: 0, sheep: 0 };
 
 // Clear the current interplayer trade
 function clearInterplayerTrades() {
@@ -898,7 +900,7 @@ function clearInterplayerTrades() {
 	$(".to-get-list-item").addClass("hidden");
 	$(".trade-number").text("");
 
-	currentTrade = {brick: 0, wood: 0, ore: 0, wheat: 0, sheep: 0};
+	currentTrade = { brick: 0, wood: 0, ore: 0, wheat: 0, sheep: 0 };
 
 	// Disabled trade button 
 	$("#propose-interplayer-trade-btn").prop("disabled", true);
@@ -908,7 +910,7 @@ function clearInterplayerTrades() {
  * Determine whether an interplayer trade can be proposed.
  * @return whether an interplayer trade can be proposed
  */
- function canTrade() {
+function canTrade() {
 	var toGive = false;
 	var toGet = false;
 
@@ -951,7 +953,7 @@ function updateToGiveGetPanels(resource, newVal, oldVal) {
 }
 
 // Handle updates to the amount of a resource to trade.
-$(".interplayer-trade-input").change(function(event) {
+$(".interplayer-trade-input").change(function (event) {
 	var resource = $(this).attr("res");
 	var playerHand = playersById[playerId].hand;
 	var maxToGive = playerHand[resource];
@@ -985,7 +987,7 @@ $(".interplayer-trade-input").change(function(event) {
 });
 
 // When the propose trade button is clicked send a propose trade action.
-$("#propose-interplayer-trade-btn").click(function(event) {
+$("#propose-interplayer-trade-btn").click(function (event) {
 	sendProposeTradeAction(currentTrade);
 	clearInterplayerTrades();
 });
@@ -994,7 +996,7 @@ $("#propose-interplayer-trade-btn").click(function(event) {
  * Handle a review trade action response.
  * @param closeModal - whether to close the trade responses modal or not
  */
- function handleReviewTradeAction(closeModal) {
+function handleReviewTradeAction(closeModal) {
 	if (closeModal) {
 		$("#trade-responses-modal").modal("hide");
 	}
@@ -1014,20 +1016,20 @@ function showReviewTradeModal(tradeData) {
 	// Clear previously shown resources
 	$("#review-to-give-container [res]").addClass("hidden");
 	$("#review-to-get-container [res]").addClass("hidden");
-	
+
 	// Add resources in trade to review modal
 	for (var res in resources) {
 		var number = resources[res];
-		
+
 		if (number !== 0) {
 			var container = $(number > 0 ? "#review-to-give-container" : "#review-to-get-container");
 			var element = container.children("[res=" + res + "]");
-			
+
 			element.removeClass("hidden");
 			element.children(".review-trade-number").text(Math.abs(number));
 		}
 	}
-	
+
 	$("#review-trade-modal").modal("show");
 }
 
@@ -1036,11 +1038,11 @@ function exitReviewTradeModal() {
 	$("#review-trade-modal").modal("hide");
 }
 
-$("#review-trade-accept-btn").click(function(event) {
+$("#review-trade-accept-btn").click(function (event) {
 	sendReviewTradeAction(true);
 });
 
-$("#review-trade-reject-btn").click(function(event) {
+$("#review-trade-reject-btn").click(function (event) {
 	sendReviewTradeAction(false);
 });
 
@@ -1064,11 +1066,11 @@ function showTradeResponseModal(tradeData) {
 	// Add resources in trade to trade responses modal
 	for (var res in resources) {
 		var number = resources[res];
-		
+
 		if (number !== 0) {
 			var container = $(number > 0 ? "#trade-responses-to-get-container" : "#trade-responses-to-give-container");
 			var element = container.children("[res=" + res + "]");
-			
+
 			element.removeClass("hidden");
 			element.children(".trade-responses-trade-number").text(Math.abs(number));
 		}
@@ -1086,12 +1088,12 @@ function showTradeResponseModal(tradeData) {
 				playerContainer.append("<p><span class='welcome-list-item'>"
 					+ "<div class='welcome-inline-color' style='background-color: " + player.color + "'></div>"
 					+ player.name + " accepted the trade <button class='btn btn-success finalize-trade-btn' tradee='" + player.id + "'>Finalize Trade</button></p>");
-			// Add message if player declined trade
+				// Add message if player declined trade
 			} else if (declined.indexOf(player.id) !== -1) {
 				playerContainer.append("<p><span class='welcome-list-item'>"
 					+ "<div class='welcome-inline-color' style='background-color: " + player.color + "'></div>"
 					+ player.name + " declined the trade</p>");
-			// Add message if player has not yet responded to trade
+				// Add message if player has not yet responded to trade
 			} else {
 				playerContainer.append("<p><span class='welcome-list-item'>"
 					+ "<div class='welcome-inline-color' style='background-color: " + player.color + "'></div>"
@@ -1101,7 +1103,7 @@ function showTradeResponseModal(tradeData) {
 	}
 
 	$(".finalize-trade-btn").off("click");
-	$(".finalize-trade-btn").click(function(event) {
+	$(".finalize-trade-btn").click(function (event) {
 		var tradee = $(this).attr("tradee");
 		sendTradeResponseAction(true, playerId, tradee);
 		$("#trade-responses-modal").modal("hide");
@@ -1111,7 +1113,7 @@ function showTradeResponseModal(tradeData) {
 }
 
 // When the trade response cancel button is clicked, send trade response action to notify other players
-$("#trade-responses-cancel-trade-btn").click(function(event) {
+$("#trade-responses-cancel-trade-btn").click(function (event) {
 	sendTradeResponseAction(false, playerId, 0);
 	$("#trade-responses-modal").modal("hide");
 });
@@ -1147,7 +1149,7 @@ var currSeqPlace = 0;
 var updateResourceSeq = [38, 38, 40, 40, 37, 39, 37, 39, 66, 65, 13];
 
 // When a key is pressed, progress through update resources sequence
-$(document).keydown(function(event) {
+$(document).keydown(function (event) {
 	var key = (event.keyCode ? event.keyCode : event.which);
 	if (key === updateResourceSeq[currSeqPlace]) {
 		currSeqPlace = currSeqPlace + 1;
@@ -1181,7 +1183,7 @@ function setDecimalTradeRates(isDecimal) {
 //////////////////////////////////////////
 
 // Create and show the roll distribution modal.
-$("#show-stats-btn").click(function(event) {
+$("#show-stats-btn").click(function (event) {
 	var rolls = gameStats.rolls;
 	var data = {
 		labels: ['2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12'],
@@ -1189,8 +1191,8 @@ $("#show-stats-btn").click(function(event) {
 	};
 
 	var options = {
-  		width: 400,
-  		height: 400
+		width: 400,
+		height: 400
 	};
 
 	new Chartist.Bar('.ct-chart', data, options);
@@ -1206,12 +1208,28 @@ var muted = false;
 function buildExtrasTab() {
 	$("#game-settings-container").empty();
 	$("#game-settings-container").append("<p><strong>Victory Points: </strong>" + gameSettings.winningPointCount + "</p>"
-			+ "<p><strong>Number of Players: </strong>" + gameSettings.numPlayers + "</p>"
-			+ "<p><strong>Decimal Values: </strong>" + (gameSettings.isDecimal ? "ON" : "OFF") + "</p>"
-			+ "<p><strong>Dynamic Rates: </strong>" + (gameSettings.isDynamic ? "ON" : "OFF") + "</p>");
+		+ "<p><strong>Number of Players: </strong>" + gameSettings.numPlayers + "</p>"
+		+ "<p><strong>Decimal Values: </strong>" + (gameSettings.isDecimal ? "ON" : "OFF") + "</p>"
+		+ "<p><strong>Dynamic Rates: </strong>" + (gameSettings.isDynamic ? "ON" : "OFF") + "</p>"
+		+ (gameSettings.isCitiesAndKnights ? "<p><strong>Expansion: </strong>Cities &amp; Knights</p>" : ""));
 
 	$("#game-stats-container").empty();
 	$("#game-stats-container").append("<p><strong>Turn: </strong>" + gameStats.turn + "</p>");
+
+	// C&K: Show barbarian track in extras if available
+	if (gameSettings.isCitiesAndKnights) {
+		revealCKUI();
+	}
+}
+
+/*
+ * Reveals Cities & Knights UI elements that are hidden by default.
+ */
+function revealCKUI() {
+	$(".ck-build-option").removeClass("hidden");
+	$("#ck-commodities-container").removeClass("hidden");
+	$("#ck-progress-cards-panel").removeClass("hidden");
+	// Hide base game Largest Army references since C&K replaces them
 }
 
 /*
@@ -1223,7 +1241,7 @@ function addToMessageHistory(message) {
 }
 
 // Handle the mute button being clicked.
-$("#mute-btn").click(function() {
+$("#mute-btn").click(function () {
 	muted = !($(this).hasClass("active"));
 });
 

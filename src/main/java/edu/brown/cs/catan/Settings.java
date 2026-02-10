@@ -79,4 +79,42 @@ public abstract class Settings {
   public static final double DROP_CARDS_THRESH = 7;
   public static final int WINNING_POINT_COUNT = 10;
 
+  // --- Cities & Knights Constants ---
+
+  // C&K Victory Point target
+  public static final int CK_WINNING_POINT_COUNT = 13;
+
+  // Knight costs
+  public final static Map<Resource, Double> KNIGHT_COST = ImmutableMap.of(
+      Resource.SHEEP, 1.0, Resource.ORE, 1.0);
+  public final static Map<Resource, Double> KNIGHT_ACTIVATE_COST = ImmutableMap
+      .of(Resource.WHEAT, 1.0);
+  public final static Map<Resource, Double> KNIGHT_PROMOTE_STRONG_COST = ImmutableMap
+      .of(Resource.SHEEP, 1.0, Resource.ORE, 1.0);
+  public final static Map<Resource, Double> KNIGHT_PROMOTE_MIGHTY_COST = ImmutableMap
+      .of(Resource.SHEEP, 2.0, Resource.ORE, 2.0);
+
+  // City Wall
+  public final static Map<Resource, Double> CITY_WALL_COST = ImmutableMap.of(
+      Resource.BRICK, 2.0);
+  public static final int MAX_CITY_WALLS = 3;
+  public static final int CITY_WALL_HAND_BONUS = 2;
+
+  // Knight piece counts per player
+  public static final int INITIAL_BASIC_KNIGHTS = 2;
+  public static final int INITIAL_STRONG_KNIGHTS = 2;
+  public static final int INITIAL_MIGHTY_KNIGHTS = 2;
+
+  // Barbarian track
+  public static final int BARBARIAN_TRACK_LENGTH = 7;
+
+  // Progress card hand limit
+  public static final int PROGRESS_CARD_MAX_HAND = 4;
+
+  // Metropolis point value
+  public static final int METROPOLIS_POINT_VAL = 2;
+
+  // Defender of Catan point value
+  public static final int DEFENDER_POINT_VAL = 1;
+
 }
