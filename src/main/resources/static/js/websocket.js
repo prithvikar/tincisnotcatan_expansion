@@ -273,6 +273,15 @@ function sendImproveCityTrackAction(track) {
 	webSocket.send(JSON.stringify(req));
 }
 
+function sendPlayProgressCardAction(cardName) {
+	var req = {
+		requestType: "action",
+		action: "playProgressCard",
+		card: cardName
+	};
+	webSocket.send(JSON.stringify(req));
+}
+
 function sendEndTurnAction() {
 	var endReq = {
 		requestType: "action",
@@ -288,6 +297,83 @@ function sendKnightOrDiceAction(choseKnight) {
 		choseKnight: choseKnight
 	};
 	webSocket.send(JSON.stringify(playReq));
+}
+
+// --- Progress Card Follow-Up Action Senders --- //
+
+function sendRemoveRoadAction(start, end) {
+	var req = {
+		requestType: "action",
+		action: "removeRoad",
+		start: start,
+		end: end
+	};
+	webSocket.send(JSON.stringify(req));
+}
+
+function sendDisplaceKnightAction(coordinate) {
+	var req = {
+		requestType: "action",
+		action: "displaceKnight",
+		coordinate: coordinate
+	};
+	webSocket.send(JSON.stringify(req));
+}
+
+function sendStealProgressCardAction(targetPlayer) {
+	var req = {
+		requestType: "action",
+		action: "stealProgressCard",
+		targetPlayer: targetPlayer
+	};
+	webSocket.send(JSON.stringify(req));
+}
+
+function sendSwapHexNumbersAction(hex1, hex2) {
+	var req = {
+		requestType: "action",
+		action: "swapHexNumbers",
+		hex1: hex1,
+		hex2: hex2
+	};
+	webSocket.send(JSON.stringify(req));
+}
+
+function sendChooseResourceAction(resource) {
+	var req = {
+		requestType: "action",
+		action: "chooseResource",
+		resource: resource
+	};
+	webSocket.send(JSON.stringify(req));
+}
+
+function sendChooseCommodityAction(resource) {
+	var req = {
+		requestType: "action",
+		action: "chooseCommodity",
+		resource: resource
+	};
+	webSocket.send(JSON.stringify(req));
+}
+
+function sendChooseOpponentCardsAction(targetPlayer) {
+	var req = {
+		requestType: "action",
+		action: "chooseOpponentCards",
+		targetPlayer: targetPlayer
+	};
+	webSocket.send(JSON.stringify(req));
+}
+
+function sendDeserterTargetAction(targetPlayer, coordinate) {
+	var req = {
+		requestType: "action",
+		action: "deserterTarget",
+		targetPlayer: targetPlayer,
+		coordinate: coordinate
+	};
+	webSocket.send(JSON.stringify(req));
 }
 
 function sendProposeTradeAction(trade) {
@@ -537,6 +623,30 @@ function handleFollowUp(action) {
 			break;
 		case "tradeResponse":
 			showTradeResponseModal(action.actionData.trade);
+			break;
+		case "removeRoad":
+			enterRemoveRoadMode();
+			break;
+		case "displaceKnight":
+			enterDisplaceKnightMode();
+			break;
+		case "stealProgressCard":
+			enterStealProgressCardModal();
+			break;
+		case "swapHexNumbers":
+			enterSwapHexNumbersMode();
+			break;
+		case "chooseResource":
+			enterChooseResourceModal("Resource Monopoly", "Choose a resource. Each opponent gives you up to 2.", sendChooseResourceAction);
+			break;
+		case "chooseCommodity":
+			enterChooseResourceModal("Trade Monopoly", "Choose a resource. Each opponent gives you 1.", sendChooseCommodityAction);
+			break;
+		case "chooseOpponentCards":
+			enterChooseOpponentModal("Master Merchant", "Select a player with more VPs to take 2 cards from.", sendChooseOpponentCardsAction);
+			break;
+		case "deserterTarget":
+			enterDeserterTargetMode();
 			break;
 		default:
 			break;

@@ -1251,39 +1251,285 @@ $("#mute-btn").click(function () {
 //////////////////////////////////////////
 
 function updateDiceDisplay(red, white, event) {
-    var $display = $("#dice-display");
-    $display.removeClass("hidden");
-    
-    $(".die").removeClass("hidden"); // Ensure dice are visible
-    
-    $("#red-die-val").text(red);
-    $("#white-die-val").text(white);
-    
-    var $eventDie = $("#event-die-val");
-    $eventDie.removeClass("ship green blue yellow");
-    
-    if (event) {
-        $eventDie.show();
-        // event values: "ship", "green", "blue", "yellow"
-        $eventDie.addClass(event);
-        
-        switch (event) {
-            case "ship":
-                $eventDie.text("Ship"); // use short text for now
-                break;
-            case "green":
-                $eventDie.text("Trade");
-                break;
-            case "blue":
-                $eventDie.text("Politic");
-                break;
-            case "yellow":
-                $eventDie.text("Sci");
-                break;
-            default:
-                $eventDie.text("?");
-        }
-    } else {
-        $eventDie.hide();
-    }
+	var $display = $("#dice-display");
+	$display.removeClass("hidden");
+
+	$(".die").removeClass("hidden"); // Ensure dice are visible
+
+	$("#red-die-val").text(red);
+	$("#white-die-val").text(white);
+
+	var $eventDie = $("#event-die-val");
+	$eventDie.removeClass("ship green blue yellow");
+
+	if (event) {
+		$eventDie.show();
+		// event values: "ship", "green", "blue", "yellow"
+		$eventDie.addClass(event);
+
+		switch (event) {
+			case "ship":
+				$eventDie.text("Ship"); // use short text for now
+				break;
+			case "green":
+				$eventDie.text("Trade");
+				break;
+			case "blue":
+				$eventDie.text("Politic");
+				break;
+			case "yellow":
+				$eventDie.text("Sci");
+				break;
+			default:
+				$eventDie.text("?");
+		}
+	} else {
+		$eventDie.hide();
+	}
 }
+
+//////////////////////////////////////////
+// Progress Card Follow-Up UI Helpers
+//////////////////////////////////////////
+
+/**
+ * Creates a dynamic Bootstrap modal with the given content.
+ * Returns the jQuery element so callers can add event handlers and show it.
+ */
+function createDynamicModal(modalId, title, bodyHtml, confirmBtnText) {
+	// Remove any existing modal with this id
+	$("#" + modalId).remove();
+
+	var html = '<div class="modal fade" id="' + modalId + '" tabindex="-1" role="dialog">'
+		+ '<div class="modal-dialog" role="document"><div class="modal-content">'
+		+ '<div class="modal-header"><h4 class="modal-title">' + title + '</h4></div>'
+		+ '<div class="modal-body">' + bodyHtml + '</div>'
+		+ '<div class="modal-footer">'
+		+ '<button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>'
+		+ '<button type="button" class="btn btn-primary" id="' + modalId + '-confirm" disabled>' + confirmBtnText + '</button>'
+		+ '</div></div></div></div>';
+	$("body").append(html);
+	return $("#" + modalId);
+}
+
+/**
+ * Diplomat: enter a mode where the player clicks a road to remove.
+ * Highlights all roads and waits for a click.
+ */
+var inRemoveRoadMode = false;
+
+function enterRemoveRoadMode() {
+	inRemoveRoadMode = true;
+	addMessage("Click on a road to remove it (Diplomat).");
+
+	for (var i = 0; i < board.paths.length; i++) {
+		var path = board.paths[i];
+		if (path.road !== null && path.road !== undefined) {
+			path.highlight();
+		}
+	}
+}
+
+function exitRemoveRoadMode() {
+	inRemoveRoadMode = false;
+	for (var i = 0; i < board.paths.length; i++) {
+		if (board.paths[i].highlighted) {
+			board.paths[i].unHighlight();
+		}
+	}
+}
+
+/**
+ * Intrigue: enter a mode where the player clicks an opponent's knight to displace.
+ */
+var inDisplaceKnightMode = false;
+
+function enterDisplaceKnightMode() {
+	inDisplaceKnightMode = true;
+	addMessage("Click on an opponent's knight to displace it (Intrigue).");
+
+	// Highlight intersections that have opponent knights
+	for (var i = 0; i < board.intersections.length; i++) {
+		var inter = board.intersections[i];
+		if (inter.knight && inter.knight.owner !== playerId) {
+			inter.highlight();
+		}
+	}
+}
+
+function exitDisplaceKnightMode() {
+	inDisplaceKnightMode = false;
+	for (var i = 0; i < board.intersections.length; i++) {
+		if (board.intersections[i].highlighted) {
+			board.intersections[i].unHighlight();
+		}
+	}
+}
+
+/**
+ * Spy: show a modal to pick an opponent to steal a progress card from.
+ */
+function enterStealProgressCardModal() {
+	var bodyHtml = '<p>Select an opponent to steal a random progress card from:</p>'
+		+ '<div id="spy-players-list" class="btn-group" data-toggle="buttons"></div>';
+
+	var $modal = createDynamicModal("spy-modal", "Spy", bodyHtml, "Steal Card");
+	var selectedTarget = null;
+
+	for (var pid in playersById) {
+		if (parseInt(pid) !== playerId) {
+			var p = playersById[pid];
+			var color = "rgba(" + p.rgbColor.r + "," + p.rgbColor.g + "," + p.rgbColor.b + ",0.4)";
+			$("#spy-players-list").append("<label class='btn btn-default' style='background-color: " + color + "'>"
+				+ "<input type='radio' name='" + p.id + "' autocomplete='off'>" + p.name + "</label>");
+		}
+	}
+
+	$("#spy-players-list").find("label").click(function (event) {
+		selectedTarget = parseInt($(event.target).find("input").prop("name") || $(event.target).closest("label").find("input").prop("name"));
+		$("#spy-modal-confirm").prop("disabled", false);
+	});
+
+	$("#spy-modal-confirm").click(function () {
+		if (selectedTarget !== null) {
+			sendStealProgressCardAction(selectedTarget);
+			$modal.modal("hide");
+		}
+	});
+
+	$modal.on("hidden.bs.modal", function () {
+		$modal.remove();
+	});
+
+	$modal.modal("show");
+}
+
+/**
+ * Inventor: enter a mode where the player clicks two hex tiles to swap numbers.
+ */
+var inventorSelectedHexes = [];
+
+function enterSwapHexNumbersMode() {
+	inventorSelectedHexes = [];
+	addMessage("Click two hex tiles to swap their number tokens (Inventor). Numbers 2, 6, 8, 12 cannot be swapped.");
+
+	for (var i = 0; i < board.tiles.length; i++) {
+		var tile = board.tiles[i];
+		// Highlight non-desert tiles with swappable numbers
+		if (tile.rollNum && tile.rollNum !== 0
+			&& tile.rollNum !== 2 && tile.rollNum !== 6
+			&& tile.rollNum !== 8 && tile.rollNum !== 12) {
+			tile.highlight();
+		}
+	}
+}
+
+function exitSwapHexNumbersMode() {
+	inventorSelectedHexes = [];
+	for (var i = 0; i < board.tiles.length; i++) {
+		if (board.tiles[i].highlighted) {
+			board.tiles[i].unHighlight();
+		}
+	}
+}
+
+/**
+ * Resource Monopoly / Trade Monopoly: show a modal to pick a resource.
+ * Reusable for both card types via the sendFn parameter.
+ */
+function enterChooseResourceModal(title, description, sendFn) {
+	var resources = ["brick", "wood", "ore", "wheat", "sheep"];
+	var circlesHtml = '<p>' + description + '</p><div class="btn-group" data-toggle="buttons" id="res-monopoly-list">';
+	for (var i = 0; i < resources.length; i++) {
+		circlesHtml += "<label class='btn btn-default' res='" + resources[i] + "'>"
+			+ "<input type='radio' autocomplete='off'>" + resources[i].charAt(0).toUpperCase() + resources[i].slice(1) + "</label>";
+	}
+	circlesHtml += '</div>';
+
+	var $modal = createDynamicModal("res-monopoly-modal", title, circlesHtml, "Confirm");
+	var selectedResource = null;
+
+	$("#res-monopoly-list").find("label").click(function (event) {
+		selectedResource = $(this).attr("res");
+		$("#res-monopoly-modal-confirm").prop("disabled", false);
+	});
+
+	$("#res-monopoly-modal-confirm").click(function () {
+		if (selectedResource) {
+			sendFn(selectedResource);
+			$modal.modal("hide");
+		}
+	});
+
+	$modal.on("hidden.bs.modal", function () {
+		$modal.remove();
+	});
+
+	$modal.modal("show");
+}
+
+/**
+ * Master Merchant: show a modal to pick an opponent with more VPs.
+ */
+function enterChooseOpponentModal(title, description, sendFn) {
+	var bodyHtml = '<p>' + description + '</p>'
+		+ '<div id="opponent-select-list" class="btn-group" data-toggle="buttons"></div>';
+
+	var $modal = createDynamicModal("opponent-select-modal", title, bodyHtml, "Confirm");
+	var selectedTarget = null;
+
+	for (var pid in playersById) {
+		if (parseInt(pid) !== playerId) {
+			var p = playersById[pid];
+			var color = "rgba(" + p.rgbColor.r + "," + p.rgbColor.g + "," + p.rgbColor.b + ",0.4)";
+			$("#opponent-select-list").append("<label class='btn btn-default' style='background-color: " + color + "'>"
+				+ "<input type='radio' name='" + p.id + "' autocomplete='off'>" + p.name + "</label>");
+		}
+	}
+
+	$("#opponent-select-list").find("label").click(function (event) {
+		selectedTarget = parseInt($(event.target).find("input").prop("name") || $(event.target).closest("label").find("input").prop("name"));
+		$("#opponent-select-modal-confirm").prop("disabled", false);
+	});
+
+	$("#opponent-select-modal-confirm").click(function () {
+		if (selectedTarget !== null) {
+			sendFn(selectedTarget);
+			$modal.modal("hide");
+		}
+	});
+
+	$modal.on("hidden.bs.modal", function () {
+		$modal.remove();
+	});
+
+	$modal.modal("show");
+}
+
+/**
+ * Deserter: enter a mode where the player clicks an opponent's knight to remove.
+ * Similar to displace but for a different card.
+ */
+var inDeserterMode = false;
+
+function enterDeserterTargetMode() {
+	inDeserterMode = true;
+	addMessage("Click on an opponent's knight to remove it with Deserter.");
+
+	for (var i = 0; i < board.intersections.length; i++) {
+		var inter = board.intersections[i];
+		if (inter.knight && inter.knight.owner !== playerId) {
+			inter.highlight();
+		}
+	}
+}
+
+function exitDeserterTargetMode() {
+	inDeserterMode = false;
+	for (var i = 0; i < board.intersections.length; i++) {
+		if (board.intersections[i].highlighted) {
+			board.intersections[i].unHighlight();
+		}
+	}
+}
+
