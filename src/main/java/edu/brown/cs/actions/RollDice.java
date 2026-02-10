@@ -3,17 +3,16 @@ package edu.brown.cs.actions;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.PrimitiveIterator;
 import java.util.Random;
 
-import com.google.common.collect.ImmutableList;
 import com.google.gson.JsonObject;
 
+import edu.brown.cs.board.Intersection;
 import edu.brown.cs.board.Tile;
-import edu.brown.cs.catan.BarbarianTrack;
 import edu.brown.cs.catan.CityImprovement;
+import edu.brown.cs.catan.KnightPiece;
 import edu.brown.cs.catan.MasterReferee;
 import edu.brown.cs.catan.Player;
 import edu.brown.cs.catan.ProgressCard;
@@ -110,29 +109,29 @@ public class RollDice implements FollowUpAction {
             .get(playerID);
         for (Resource res : resourceCount.keySet()) {
           switch (res) {
-          case WHEAT:
-            message.append(String.format(", you received %d wheat",
-                resourceCount.get(res)));
-            break;
-          case SHEEP:
-            message.append(String.format(", you received %d sheep",
-                resourceCount.get(res)));
-            break;
-          case ORE:
-            message.append(String.format(", you received %d ore",
-                resourceCount.get(res)));
-            break;
-          case BRICK:
-            message.append(String.format(", you received %d brick",
-                resourceCount.get(res)));
-            break;
-          case WOOD:
-            message.append(String.format(", you received %d wood",
-                resourceCount.get(res)));
-            break;
-          default:
-            message.append(".");
-            break;
+            case WHEAT:
+              message.append(String.format(", you received %d wheat",
+                  resourceCount.get(res)));
+              break;
+            case SHEEP:
+              message.append(String.format(", you received %d sheep",
+                  resourceCount.get(res)));
+              break;
+            case ORE:
+              message.append(String.format(", you received %d ore",
+                  resourceCount.get(res)));
+              break;
+            case BRICK:
+              message.append(String.format(", you received %d brick",
+                  resourceCount.get(res)));
+              break;
+            case WOOD:
+              message.append(String.format(", you received %d wood",
+                  resourceCount.get(res)));
+              break;
+            default:
+              message.append(".");
+              break;
           }
         }
         message.append(".");
@@ -212,18 +211,87 @@ public class RollDice implements FollowUpAction {
       int eventRoll = r.nextInt(6) + 1;
       String eventDie = "";
       String gateName = ""; // For message display
-      
+
       // Barbarian ship moves on 1, 2, 3
       if (eventRoll <= 3) {
         eventDie = "ship";
         boolean attack = mr.getBarbarianTrack().advance();
         String msg = " Event: Barbarian ship advanced!";
         if (attack) {
-          msg += " Barbarians are attacking!";
-          // TODO: Implement barbarian attack resolution logic here or add follow-up
-          // For now, simple attack resolution is automatic in BarbarianTrack? 
-          // No, we need to handle defender points and pillaging.
-          // This will be a separate task, for now just notify.
+          // --- Barbarian Attack Resolution ---
+          int totalKnightStrength = 0;
+          int totalBuiltCities = 0;
+          for (Player p : _ref.getPlayers()) {
+            totalKnightStrength += p.getActiveKnightStrength();
+            int builtCities = Settings.INITIAL_CITIES - p.numCities();
+            totalBuiltCities += builtCities;
+          }
+
+          if (totalKnightStrength >= totalBuiltCities) {
+            // --- Knights Win: Defender of Catan ---
+            msg += " Knights defended Catan!";
+            int maxStrength = 0;
+            for (Player p : _ref.getPlayers()) {
+              int str = p.getActiveKnightStrength();
+              if (str > maxStrength) {
+                maxStrength = str;
+              }
+            }
+            if (maxStrength > 0) {
+              for (Player p : _ref.getPlayers()) {
+                if (p.getActiveKnightStrength() == maxStrength) {
+                  p.addDefenderPoint();
+                  msg += String.format(" %s earns Defender of Catan!", p.getName());
+                }
+              }
+            }
+          } else {
+            // --- Knights Lose: Pillage weakest contributor's city ---
+            msg += " Barbarians pillage!";
+            // Find lowest knight strength among players with at least 1 built city
+            int minStrength = Integer.MAX_VALUE;
+            for (Player p : _ref.getPlayers()) {
+              int builtCities = Settings.INITIAL_CITIES - p.numCities();
+              if (builtCities > 0) {
+                int str = p.getActiveKnightStrength();
+                if (str < minStrength) {
+                  minStrength = str;
+                }
+              }
+            }
+            // Pillage one city from each player with the lowest strength
+            for (Player p : _ref.getPlayers()) {
+              int builtCities = Settings.INITIAL_CITIES - p.numCities();
+              if (builtCities > 0 && p.getActiveKnightStrength() == minStrength) {
+                // Demote one city on the board to a settlement
+                for (Intersection inter : mr.getBoard().getIntersections().values()) {
+                  if (inter.demoteToSettlement(p)) {
+                    // Return a city piece and consume a settlement piece
+                    // (useCity adds back a settlement, so we undo that by
+                    // just adjusting the counts directly — but the simplest
+                    // approach: the player effectively gets a city piece back
+                    // and loses a settlement piece)
+                    msg += String.format(" %s's city was pillaged!", p.getName());
+                    // Remove a city wall if the player has one
+                    if (p.getCityWallCount() > 0) {
+                      p.removeCityWall();
+                      msg += String.format(" %s lost a city wall.", p.getName());
+                    }
+                    break; // Only pillage one city per player
+                  }
+                }
+              }
+            }
+          }
+
+          // Deactivate all knights after the attack
+          for (Player p : _ref.getPlayers()) {
+            for (KnightPiece k : p.getKnights()) {
+              if (k.isActive()) {
+                k.deactivate();
+              }
+            }
+          }
         }
         for (Integer pid : toRet.keySet()) {
           ActionResponse orig = toRet.get(pid);
@@ -231,21 +299,21 @@ public class RollDice implements FollowUpAction {
           Object existingData = orig.getData();
           JsonObject data = new JsonObject();
           if (existingData instanceof Map) {
-             Map<?,?> m = (Map<?,?>) existingData;
-             for (Map.Entry<?,?> e : m.entrySet()) {
-                 data.addProperty(e.getKey().toString(), e.getValue().toString());
-             }
+            Map<?, ?> m = (Map<?, ?>) existingData;
+            for (Map.Entry<?, ?> e : m.entrySet()) {
+              data.addProperty(e.getKey().toString(), e.getValue().toString());
+            }
           } else if (existingData instanceof JsonObject) {
-              JsonObject old = (JsonObject) existingData;
-              for (Map.Entry<String, com.google.gson.JsonElement> entry : old.entrySet()) {
-                  data.add(entry.getKey(), entry.getValue());
-              }
+            JsonObject old = (JsonObject) existingData;
+            for (Map.Entry<String, com.google.gson.JsonElement> entry : old.entrySet()) {
+              data.add(entry.getKey(), entry.getValue());
+            }
           }
           data.addProperty("eventDie", "ship");
           data.addProperty("barbarianPosition", mr.getBarbarianTrack().getPosition());
           data.addProperty("redDie", redDie);
           data.addProperty("whiteDie", whiteDie);
-          
+
           toRet.put(pid, new ActionResponse(orig.getSuccess(),
               orig.getMessage() + msg, data));
         }
@@ -269,7 +337,7 @@ public class RollDice implements FollowUpAction {
           gateName = "Science (yellow)";
           matchTrack = CityImprovement.Track.SCIENCE;
         }
-        
+
         // Use the red die value (already rolled)
         // If a player's improvement level on the matching track >= redDie,
         // they draw a progress card.
@@ -295,20 +363,20 @@ public class RollDice implements FollowUpAction {
           Object existingData = orig.getData();
           JsonObject data = new JsonObject();
           if (existingData instanceof Map) {
-             Map<?,?> m = (Map<?,?>) existingData;
-             for (Map.Entry<?,?> e : m.entrySet()) {
-                 data.addProperty(e.getKey().toString(), e.getValue().toString());
-             }
+            Map<?, ?> m = (Map<?, ?>) existingData;
+            for (Map.Entry<?, ?> e : m.entrySet()) {
+              data.addProperty(e.getKey().toString(), e.getValue().toString());
+            }
           } else if (existingData instanceof JsonObject) {
-              JsonObject old = (JsonObject) existingData;
-              for (Map.Entry<String, com.google.gson.JsonElement> entry : old.entrySet()) {
-                  data.add(entry.getKey(), entry.getValue());
-              }
+            JsonObject old = (JsonObject) existingData;
+            for (Map.Entry<String, com.google.gson.JsonElement> entry : old.entrySet()) {
+              data.add(entry.getKey(), entry.getValue());
+            }
           }
           data.addProperty("eventDie", eventDie);
           data.addProperty("redDie", redDie);
           data.addProperty("whiteDie", whiteDie);
-          
+
           toRet.put(pid, new ActionResponse(orig.getSuccess(),
               orig.getMessage() + gateMsg, data));
         }

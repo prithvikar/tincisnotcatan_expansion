@@ -20,8 +20,8 @@ public class Intersection {
    * Constructor for the class.
    *
    * @param position
-   *          Intersection Coordinate that represents this intersection's
-   *          position on the board.
+   *                 Intersection Coordinate that represents this intersection's
+   *                 position on the board.
    */
   public Intersection(IntersectionCoordinate position) {
     _position = position;
@@ -58,7 +58,7 @@ public class Intersection {
    * a resource of the input type.
    *
    * @param res
-   *          Type of resource to collect.
+   *            Type of resource to collect.
    * @return A map of the player id to a map of resources that they collected
    *         and how many of them.
    */
@@ -94,6 +94,23 @@ public class Intersection {
     }
   }
 
+  /**
+   * Demotes a city on this intersection back to a settlement (barbarian
+   * pillaging). Only applies if the building is a City owned by the given
+   * player.
+   *
+   * @param p the player whose city is being pillaged
+   * @return true if the city was demoted, false otherwise
+   */
+  public boolean demoteToSettlement(Player p) {
+    if (_building != null && _building instanceof City
+        && _building.getPlayer().equals(p)) {
+      _building = new Settlement(p);
+      return true;
+    }
+    return false;
+  }
+
   // States whether or not there is a settlement on an intersection 1 road
   // length away.
   private boolean hasAdjacentSettlement() {
@@ -109,9 +126,9 @@ public class Intersection {
    * States whether or not a player can place a settlement on this intersection.
    *
    * @param r
-   *          The referee of the game.
+   *                 The referee of the game.
    * @param playerID
-   *          ID of the player who is wanting to build a settlement
+   *                 ID of the player who is wanting to build a settlement
    * @return A boolean stating whether or not the player can build on this
    *         intersection.
    */
