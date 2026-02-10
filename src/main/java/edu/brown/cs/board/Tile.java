@@ -22,7 +22,7 @@ import edu.brown.cs.catan.Resource;
  */
 public class Tile implements BoardTile {
   private final Collection<Intersection> _intersections;
-  private final int _rollNum;
+  private int _rollNum;
   private final TileType _type;
   private final HexCoordinate _coordinate;
   private boolean _hasRobber;
@@ -33,15 +33,15 @@ public class Tile implements BoardTile {
    * Constructor for the class.
    *
    * @param rollNum
-   *          Number that will trigger this tile.
+   *                      Number that will trigger this tile.
    * @param coordinate
-   *          Location of the tile on the board.
+   *                      Location of the tile on the board.
    * @param intersections
-   *          Map of the intersections on the board.
+   *                      Map of the intersections on the board.
    * @param paths
-   *          Map of the paths on the board.
+   *                      Map of the paths on the board.
    * @param type
-   *          The type of resource associated with this tile.
+   *                      The type of resource associated with this tile.
    */
   public Tile(int rollNum, HexCoordinate coordinate,
       Map<IntersectionCoordinate, Intersection> intersections,
@@ -59,17 +59,18 @@ public class Tile implements BoardTile {
    * Constructor for the class.
    *
    * @param rollNum
-   *          Number that will trigger this tile.
+   *                      Number that will trigger this tile.
    * @param coordinate
-   *          Location of the tile on the board.
+   *                      Location of the tile on the board.
    * @param intersections
-   *          Map of the intersections on the board.
+   *                      Map of the intersections on the board.
    * @param paths
-   *          Map of the paths on the board.
+   *                      Map of the paths on the board.
    * @param type
-   *          The type of resource associated with this tile.
+   *                      The type of resource associated with this tile.
    * @param hasRobber
-   *          Boolean stating whether or not the robber is on this tile.
+   *                      Boolean stating whether or not the robber is on this
+   *                      tile.
    */
   public Tile(int rollNum, HexCoordinate coordinate,
       Map<IntersectionCoordinate, Intersection> intersections,
@@ -87,11 +88,11 @@ public class Tile implements BoardTile {
    * Constructor for the class (Seat tile specific).
    *
    * @param coordinate
-   *          Location of the tile on the board.
+   *                      Location of the tile on the board.
    * @param type
-   *          The tile type associated with this tile.
+   *                      The tile type associated with this tile.
    * @param intersections
-   *          Map of the intersections on the board.
+   *                      Map of the intersections on the board.
    */
   public Tile(HexCoordinate coordinate, TileType type,
       Map<IntersectionCoordinate, Intersection> intersections) {
@@ -109,11 +110,10 @@ public class Tile implements BoardTile {
    * the port locations.
    *
    * @param intersections
-   *          Map of the intersections on the board.
+   *                      Map of the intersections on the board.
    */
   private void fillSeaTile(Map<IntersectionCoordinate, Intersection> intersections) {
-    PriorityQueue<IntersectionCoordinate> closestIntersections =
-        new PriorityQueue<>(6, new IntersectionComparator());
+    PriorityQueue<IntersectionCoordinate> closestIntersections = new PriorityQueue<>(6, new IntersectionComparator());
 
     HexCoordinate upLeftTile = new HexCoordinate(_coordinate.getX(),
         _coordinate.getY(), _coordinate.getZ() + 1);
@@ -241,7 +241,7 @@ public class Tile implements BoardTile {
   private void fillIntersections(
       Map<IntersectionCoordinate, Intersection> intersections,
       IntersectionCoordinate coord) {
-    if(intersections.containsKey(coord)) {
+    if (intersections.containsKey(coord)) {
       _intersections.add(intersections.get(coord));
     } else {
       Intersection newIntersect = new Intersection(coord);
@@ -254,7 +254,7 @@ public class Tile implements BoardTile {
   private void fillPaths(Intersection start, Intersection end,
       Map<PathCoordinate, Path> paths) {
     PathCoordinate path = new PathCoordinate(start.getPosition(), end.getPosition());
-    if(!paths.containsKey(path)) {
+    if (!paths.containsKey(path)) {
       paths.put(path, new Path(start, end));
     }
   }
@@ -282,7 +282,7 @@ public class Tile implements BoardTile {
         }
         Map<Resource, Integer> resourceCount = fromInter.get(playerID);
         Map<Resource, Integer> playerCount = playerResourceCount.get(playerID);
-        for(Resource res : resourceCount.keySet()) {
+        for (Resource res : resourceCount.keySet()) {
           if (playerCount.containsKey(res)) {
             playerCount.replace(res,
                 playerCount.get(res) + resourceCount.get(res));
@@ -366,7 +366,7 @@ public class Tile implements BoardTile {
    * Setter for the hasRobber boolean.
    *
    * @param _hasRobber
-   *          boolean stating whether or not the robber is on this tile.
+   *                   boolean stating whether or not the robber is on this tile.
    */
   public void hasRobber(boolean _hasRobber) {
     this._hasRobber = _hasRobber;
@@ -375,6 +375,15 @@ public class Tile implements BoardTile {
   @Override
   public int getRollNumber() {
     return _rollNum;
+  }
+
+  /**
+   * Sets the roll number for this tile. Used by the Inventor progress card.
+   * 
+   * @param num The new roll number.
+   */
+  public void setRollNumber(int num) {
+    _rollNum = num;
   }
 
   @Override

@@ -24,9 +24,9 @@ public class Path {
    * Constructor for the class.
    *
    * @param start
-   *          Intersection where the path begins.
+   *              Intersection where the path begins.
    * @param end
-   *          Intersection where the path ends.
+   *              Intersection where the path ends.
    */
   public Path(Intersection start, Intersection end) {
     _start = start;
@@ -78,7 +78,7 @@ public class Path {
    * Finds the longest road associated with the input player.
    *
    * @param player
-   *          Player whose roads to evaluate.
+   *               Player whose roads to evaluate.
    * @return Int that is the length of the longest road for this player.
    */
   public int getLongestPath(Player player) {
@@ -132,11 +132,11 @@ public class Path {
    * States whether or not a road can be placed in this location during setup.
    *
    * @param setup
-   *          Setup to be evaluated.
+   *              Setup to be evaluated.
    * @return A boolean stating whether or not a road can be built here.
    */
   public boolean canPlaceSetupRoad(Setup setup) {
-    if (setup.getLastBuiltSettlement()!= null) {
+    if (setup.getLastBuiltSettlement() != null) {
       if (getStart().equals(setup.getLastBuiltSettlement())
           || getEnd().equals(setup.getLastBuiltSettlement())) {
         return true;
@@ -194,6 +194,13 @@ public class Path {
   }
 
   /**
+   * Removes the road from this path.
+   */
+  public void removeRoad() {
+    _road = null;
+  }
+
+  /**
    * Gets the start of the path.
    *
    * @return the starting Intersection of the path.
@@ -215,7 +222,7 @@ public class Path {
    * Gets the end opposite the input end.
    *
    * @param end
-   *          Endpoint that you want the opposite of.
+   *            Endpoint that you want the opposite of.
    * @return The intersection that is the on the opposite side of the path, else
    *         null.
    */

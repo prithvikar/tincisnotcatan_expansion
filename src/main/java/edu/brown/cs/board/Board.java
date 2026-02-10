@@ -45,11 +45,11 @@ public class Board {
    * constructing the board.
    *
    * @param availTiles
-   *          List of tiles.
+   *                   List of tiles.
    * @param type
-   *          Type of tiles to add.
+   *                   Type of tiles to add.
    * @param numTiles
-   *          How many tiles to add.
+   *                   How many tiles to add.
    */
   private void addTiles(List<TileType> availTiles, TileType type, int numTiles) {
     for (int i = 0; i < numTiles; i++) {
@@ -99,7 +99,7 @@ public class Board {
    * Returns true if there are possible permutations of the array.
    *
    * @param data
-   *          Array to permute
+   *             Array to permute
    * @return Boolean stating if there are more permutations
    */
   private boolean permute(int[] data) {
@@ -132,7 +132,7 @@ public class Board {
    * Tells the tiles what was rolled.
    *
    * @param roll
-   *          Num that was rolled.
+   *             Num that was rolled.
    */
   public void notifyTiles(int roll) {
     for (Tile t : _tiles) {
@@ -204,7 +204,7 @@ public class Board {
    * Constructor for the Board.
    *
    * @param settings
-   *          Settings for how the board should be made.
+   *                 Settings for how the board should be made.
    */
   public Board(GameSettings settings) {
     List<TileType> availTiles = new ArrayList<TileType>();
@@ -349,7 +349,7 @@ public class Board {
    * Moves the robber to a given HexCoord.
    * 
    * @param coord
-   *          Coordinate of the tile to moved it to.
+   *              Coordinate of the tile to moved it to.
    * @return Set of Integers that are the playerIDs of the people on the tile
    *         the robber was moved to.
    */
@@ -374,7 +374,7 @@ public class Board {
    * Finds the longest path on the board.
    * 
    * @param player
-   *          Finds the longest path belonging to this player.
+   *               Finds the longest path belonging to this player.
    * @return The length of the players longest road.
    */
   public int longestPath(Player player) {
@@ -411,6 +411,81 @@ public class Board {
     tiles.add(WOOD);
     tiles.add(WHEAT);
     return tiles;
+  }
+
+  /**
+   * Gets the Path between two intersection coordinates.
+   *
+   * @param start Start intersection coordinate.
+   * @param end   End intersection coordinate.
+   * @return The Path, or null if not found.
+   */
+  public Path getPath(IntersectionCoordinate start,
+      IntersectionCoordinate end) {
+    PathCoordinate pc = new PathCoordinate(start, end);
+    Path p = _paths.get(pc);
+    if (p != null) {
+      return p;
+    }
+    // Try reverse
+    PathCoordinate pcReverse = new PathCoordinate(end, start);
+    return _paths.get(pcReverse);
+  }
+
+  /**
+   * Removes a road from the path between two intersections.
+   *
+   * @param start Start coordinate.
+   * @param end   End coordinate.
+   * @throws IllegalArgumentException if no road exists there.
+   */
+  public void removeRoad(IntersectionCoordinate start,
+      IntersectionCoordinate end) {
+    Path path = getPath(start, end);
+    if (path == null || path.getRoad() == null) {
+      throw new IllegalArgumentException("No road exists at that location.");
+    }
+    path.removeRoad();
+  }
+
+  /**
+   * Gets a tile by its hex coordinate.
+   *
+   * @param coord The coordinate to look up.
+   * @return The Tile, or null if not found.
+   */
+  public Tile getTile(HexCoordinate coord) {
+    for (Tile t : _tiles) {
+      if (t.getCoordinate().equals(coord)) {
+        return t;
+      }
+    }
+    return null;
+  }
+
+  /**
+   * Swaps the roll numbers between two tiles. Used by the Inventor card.
+   * Cannot swap tiles with roll numbers 2, 6, 8, or 12.
+   *
+   * @param h1 First hex coordinate.
+   * @param h2 Second hex coordinate.
+   * @throws IllegalArgumentException if tiles not found or restricted numbers.
+   */
+  public void swapRollNumbers(HexCoordinate h1, HexCoordinate h2) {
+    Tile t1 = getTile(h1);
+    Tile t2 = getTile(h2);
+    if (t1 == null || t2 == null) {
+      throw new IllegalArgumentException("One or both tiles not found.");
+    }
+    int num1 = t1.getRollNumber();
+    int num2 = t2.getRollNumber();
+    if (num1 == 2 || num1 == 6 || num1 == 8 || num1 == 12
+        || num2 == 2 || num2 == 6 || num2 == 8 || num2 == 12) {
+      throw new IllegalArgumentException(
+          "Cannot swap tiles with roll numbers 2, 6, 8, or 12.");
+    }
+    t1.setRollNumber(num2);
+    t2.setRollNumber(num1);
   }
 
 }
