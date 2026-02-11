@@ -50,6 +50,7 @@ public class MasterReferee implements Referee {
   private List<ProgressCard> _scienceDeck;
   private int _merchantOwner = -1; // playerID who has the merchant, -1 if none
   private HexCoordinate _merchantHex = null; // hex where merchant is placed
+  private int[] _overriddenDice = null; // Alchemist: pre-set dice values
   private Map<CityImprovement.Track, Integer> _metropolisOwners;
 
   /**
@@ -60,14 +61,12 @@ public class MasterReferee implements Referee {
     this(new GameSettings());
   }
 
-
-
   /**
    * Creates a MasterReferee. Contains all Catan game data with inputted
    * GameSettings.
    *
    * @param gameSettings
-   *          A GameSettings object to use as the gameSettings.
+   *                     A GameSettings object to use as the gameSettings.
    */
   public MasterReferee(GameSettings gameSettings) {
     _gameSettings = gameSettings;
@@ -107,17 +106,17 @@ public class MasterReferee implements Referee {
   public ProgressCard drawProgressCard(ProgressCard.Category category) {
     List<ProgressCard> deck;
     switch (category) {
-    case TRADE:
-      deck = _tradeDeck;
-      break;
-    case POLITICS:
-      deck = _politicsDeck;
-      break;
-    case SCIENCE:
-      deck = _scienceDeck;
-      break;
-    default:
-      return null;
+      case TRADE:
+        deck = _tradeDeck;
+        break;
+      case POLITICS:
+        deck = _politicsDeck;
+        break;
+      case SCIENCE:
+        deck = _scienceDeck;
+        break;
+      default:
+        return null;
     }
     if (deck == null || deck.isEmpty()) {
       return null;
@@ -125,26 +124,32 @@ public class MasterReferee implements Referee {
     return deck.remove(0);
   }
 
-  /**
-   * Returns the player ID of the merchant owner, or -1 if no one owns it.
-   */
+  @Override
   public int getMerchantOwner() {
     return _merchantOwner;
   }
 
-  /**
-   * Returns the hex where the merchant is placed, or null.
-   */
+  @Override
   public HexCoordinate getMerchantHex() {
     return _merchantHex;
   }
 
-  /**
-   * Places the merchant on a hex and assigns ownership to a player.
-   */
+  @Override
   public void setMerchant(int playerID, HexCoordinate hex) {
     _merchantOwner = playerID;
     _merchantHex = hex;
+  }
+
+  @Override
+  public void setOverriddenDice(int red, int white) {
+    _overriddenDice = new int[] { red, white };
+  }
+
+  @Override
+  public int[] consumeOverriddenDice() {
+    int[] result = _overriddenDice;
+    _overriddenDice = null;
+    return result;
   }
 
   private List<Integer> getSetupOrder() {
@@ -357,7 +362,7 @@ public class MasterReferee implements Referee {
   public void updateMetropolis(CityImprovement.Track track, int candidateID) {
     Player candidate = getPlayerByID(candidateID);
     int candidateLevel = candidate.getCityImprovement().getLevel(track);
-    
+
     // Must be at least level 4 to have a metropolis
     if (candidateLevel < CityImprovement.METROPOLIS_THRESHOLD) {
       return;
@@ -653,6 +658,34 @@ public class MasterReferee implements Referee {
     @Override
     public boolean removePlayer(int id) {
       return _referee.removePlayer(id);
+    }
+
+    @Override
+    public void setMerchant(int playerID, HexCoordinate hex) {
+      throw new UnsupportedOperationException(
+          "A ReadOnlyReferee cannot set the merchant.");
+    }
+
+    @Override
+    public int getMerchantOwner() {
+      return _referee.getMerchantOwner();
+    }
+
+    @Override
+    public HexCoordinate getMerchantHex() {
+      return _referee.getMerchantHex();
+    }
+
+    @Override
+    public void setOverriddenDice(int red, int white) {
+      throw new UnsupportedOperationException(
+          "A ReadOnlyReferee cannot set overridden dice.");
+    }
+
+    @Override
+    public int[] consumeOverriddenDice() {
+      throw new UnsupportedOperationException(
+          "A ReadOnlyReferee cannot consume overridden dice.");
     }
 
   }

@@ -508,9 +508,38 @@ public class PlayProgressCard implements Action {
         }
         break;
 
-      // --- Deferred cards: Merchant, Alchemist ---
+      // --- Merchant: place the merchant pawn on a hex ---
       case MERCHANT:
+        PlaceMerchant placeMerchant = new PlaceMerchant(_player.getID());
+        _ref.addFollowUp(ImmutableList.of(placeMerchant));
+        for (Player p : _ref.getPlayers()) {
+          if (p.equals(_player)) {
+            toRet.put(p.getID(), new ActionResponse(true,
+                "Merchant played. Place the merchant on a hex adjacent to your building.",
+                null));
+          } else {
+            toRet.put(p.getID(),
+                new ActionResponse(true, publicMsg, null));
+          }
+        }
+        break;
+
+      // --- Alchemist: choose dice values before rolling ---
       case ALCHEMIST:
+        ChooseDice chooseDice = new ChooseDice(_player.getID());
+        _ref.addFollowUp(ImmutableList.of(chooseDice));
+        for (Player p : _ref.getPlayers()) {
+          if (p.equals(_player)) {
+            toRet.put(p.getID(), new ActionResponse(true,
+                "Alchemist played. Choose your dice values (1-6 each).",
+                null));
+          } else {
+            toRet.put(p.getID(),
+                new ActionResponse(true, publicMsg, null));
+          }
+        }
+        break;
+
       default:
         for (Player p : _ref.getPlayers()) {
           if (p.equals(_player)) {

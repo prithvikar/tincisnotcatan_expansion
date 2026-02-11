@@ -81,6 +81,8 @@ public class CatanConverter {
     private GameStatsRaw stats;
     // C&K fields (null when not in C&K mode)
     private BarbarianTrackRaw barbarianTrack;
+    private Integer merchantOwner;
+    private HexCoordinate merchantHex;
 
     public GameState(Referee ref, int playerID) {
       this.playerID = playerID;
@@ -105,6 +107,10 @@ public class CatanConverter {
       if (ref.getGameSettings().isCitiesAndKnights && ref instanceof MasterReferee) {
         MasterReferee mr = (MasterReferee) ref;
         this.barbarianTrack = new BarbarianTrackRaw(mr.getBarbarianTrack());
+        if (mr.getMerchantOwner() >= 0) {
+          this.merchantOwner = mr.getMerchantOwner();
+          this.merchantHex = mr.getMerchantHex();
+        }
       }
     }
   }
@@ -164,39 +170,42 @@ public class CatanConverter {
     public BoardRaw(Referee ref, Board board, int playerID) {
       intersections = new ArrayList<>();
       Map<IntersectionCoordinate, String> metropolisMap = new HashMap<>();
-      
+
       // Calculate metropolises if C&K
       if (ref.getGameSettings().isCitiesAndKnights && ref instanceof MasterReferee) {
-          MasterReferee mr = (MasterReferee) ref;
-          // Group cities by player
-          Map<Integer, List<Intersection>> playerCities = new HashMap<>();
-          for (Intersection i : board.getIntersections().values()) {
-              if (i.getBuilding() != null && i.getBuilding() instanceof City) {
-                  int owner = i.getBuilding().getPlayer().getID();
-                  if (!playerCities.containsKey(owner)) {
-                      playerCities.put(owner, new ArrayList<>());
-                  }
-                  playerCities.get(owner).add(i);
-              }
+        MasterReferee mr = (MasterReferee) ref;
+        // Group cities by player
+        Map<Integer, List<Intersection>> playerCities = new HashMap<>();
+        for (Intersection i : board.getIntersections().values()) {
+          if (i.getBuilding() != null && i.getBuilding() instanceof City) {
+            int owner = i.getBuilding().getPlayer().getID();
+            if (!playerCities.containsKey(owner)) {
+              playerCities.put(owner, new ArrayList<>());
+            }
+            playerCities.get(owner).add(i);
           }
-          
-          // Assign metropolises
-          for (Map.Entry<Integer, List<Intersection>> entry : playerCities.entrySet()) {
-              int pid = entry.getKey();
-              List<Intersection> cities = entry.getValue();
-              // Sort consistently
-              cities.sort((a, b) -> a.getPosition().toString().compareTo(b.getPosition().toString()));
-              
-              // Check owned metropolises
-              List<String> ownedMetros = new ArrayList<>();
-              if (Integer.valueOf(pid).equals(mr.getMetropolisOwner(CityImprovement.Track.TRADE))) ownedMetros.add("trade");
-              if (Integer.valueOf(pid).equals(mr.getMetropolisOwner(CityImprovement.Track.POLITICS))) ownedMetros.add("politics");
-              if (Integer.valueOf(pid).equals(mr.getMetropolisOwner(CityImprovement.Track.SCIENCE))) ownedMetros.add("science");
-              
-              for (int j = 0; j < Math.min(cities.size(), ownedMetros.size()); j++) {
-                  metropolisMap.put(cities.get(j).getPosition(), ownedMetros.get(j));
-              }
+        }
+
+        // Assign metropolises
+        for (Map.Entry<Integer, List<Intersection>> entry : playerCities.entrySet()) {
+          int pid = entry.getKey();
+          List<Intersection> cities = entry.getValue();
+          // Sort consistently
+          cities.sort((a, b) -> a.getPosition().toString().compareTo(b.getPosition().toString()));
+
+          // Check owned metropolises
+          List<String> ownedMetros = new ArrayList<>();
+          if (Integer.valueOf(pid).equals(mr.getMetropolisOwner(CityImprovement.Track.TRADE)))
+            ownedMetros.add("trade");
+          if (Integer.valueOf(pid).equals(mr.getMetropolisOwner(CityImprovement.Track.POLITICS)))
+            ownedMetros.add("politics");
+          if (Integer.valueOf(pid).equals(mr.getMetropolisOwner(CityImprovement.Track.SCIENCE)))
+            ownedMetros.add("science");
+
+          for (int j = 0; j < Math.min(cities.size(), ownedMetros.size()); j++) {
+            metropolisMap.put(cities.get(j).getPosition(), ownedMetros.get(j));
           }
+        }
       }
 
       for (Intersection intersection : board.getIntersections().values()) {
@@ -226,8 +235,9 @@ public class CatanConverter {
       end = path.getEnd().getPosition();
       road = path.getRoad() != null ? new RoadRaw(path.getRoad()) : null;
       canBuildRoad = ref.getGameStatus() == GameStatus.SETUP ? path
-          .canPlaceSetupRoad(ref.getSetup()) : path.canPlaceRoad(ref
-          .getPlayerByID(playerID));
+          .canPlaceSetupRoad(ref.getSetup())
+          : path.canPlaceRoad(ref
+              .getPlayerByID(playerID));
     }
 
   }
@@ -362,7 +372,7 @@ public class CatanConverter {
     private int[] rolls;
     private int turn;
 
-    GameStatsRaw(Referee ref){
+    GameStatsRaw(Referee ref) {
       this.rolls = ref.getGameStats().getRollsArray();
       this.turn = ref.getTurn().getTurnNum();
     }

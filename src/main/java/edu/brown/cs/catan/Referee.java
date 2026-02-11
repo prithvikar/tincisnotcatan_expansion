@@ -6,6 +6,7 @@ import java.util.Map;
 
 import edu.brown.cs.actions.FollowUpAction;
 import edu.brown.cs.board.Board;
+import edu.brown.cs.board.HexCoordinate;
 import edu.brown.cs.gamestats.GameStats;
 
 public interface Referee {
@@ -67,6 +68,18 @@ public interface Referee {
   GameStats getGameStats();
 
   boolean removePlayer(int id);
+
+  // --- Cities & Knights: Merchant ---
+  void setMerchant(int playerID, HexCoordinate hex);
+
+  int getMerchantOwner();
+
+  HexCoordinate getMerchantHex();
+
+  // --- Cities & Knights: Alchemist dice override ---
+  void setOverriddenDice(int red, int white);
+
+  int[] consumeOverriddenDice();
 
   public enum GameStatus {
     WAITING, // Waiting for players (pre-game)

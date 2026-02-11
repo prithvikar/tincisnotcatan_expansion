@@ -508,6 +508,22 @@ body {
 	vertical-align: middle;
 }
 
+.merchant-icon {
+	width: 75%;
+	height: 75%;
+	display: inline-block;
+	vertical-align: middle;
+	position: absolute;
+	bottom: -2px;
+	right: -2px;
+	z-index: 3;
+}
+
+.merchant-circle {
+	background-color: #FFD700 !important;
+	box-shadow: 0px 0px 3px 2px rgba(212,160,23,0.7);
+}
+
 .port-icon {
 	width: 100%;
 	height: 100%;

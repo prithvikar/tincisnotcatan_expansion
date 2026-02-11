@@ -1,6 +1,6 @@
-var X_UNIT_VEC = {x: Math.sqrt(3) / 2, y: 0.5};
-var Y_UNIT_VEC = {x: 0, y: -1};
-var Z_UNIT_VEC = {x: -Math.sqrt(3) / 2, y: 0.5};
+var X_UNIT_VEC = { x: Math.sqrt(3) / 2, y: 0.5 };
+var Y_UNIT_VEC = { x: 0, y: -1 };
+var Z_UNIT_VEC = { x: -Math.sqrt(3) / 2, y: 0.5 };
 
 var TILE_SCALE = 0.95;
 var NUMBER_SCALE = 0.175;
@@ -42,6 +42,8 @@ function Tile(coordinates, tileType, number, hasRobber, port) {
 	this.number = number;
 	this.numDots = 6 - Math.abs(this.number - 7);
 	this.hasRobber = hasRobber;
+	this.hasMerchant = false;
+	this.merchantOwner = -1;
 	this.highlighted = false;
 
 	this.port = port;
@@ -50,7 +52,7 @@ function Tile(coordinates, tileType, number, hasRobber, port) {
 	this.id = "tile-x-" + this.coordinates.x + "y-" + this.coordinates.y + "z-" + this.coordinates.z;
 
 	$("#board-viewport").append("<div class='hexagon-wrapper' id='" + this.id + "-wrapper'>"
-			+ "<div class='hexagon' id='" + this.id + "'></div></div>");
+		+ "<div class='hexagon' id='" + this.id + "'></div></div>");
 
 	if (this.tileType === TILE_TYPE.DESERT) {
 		$("#" + this.id + "-wrapper").append("<div class='circle number-circle desert-circle'></div>");
@@ -58,8 +60,8 @@ function Tile(coordinates, tileType, number, hasRobber, port) {
 		$("#" + this.id + "-wrapper").append("<div class='circle number-circle sea-circle'></div>");
 	} else {
 		$("#" + this.id + "-wrapper").append("<div class='circle number-circle number-circle-color'>"
-				+ "<span class='unselectable'>" + this.number + "</span>"
-				+ "<br><div class='dots-container'></div></div>");
+			+ "<span class='unselectable'>" + this.number + "</span>"
+			+ "<br><div class='dots-container'></div></div>");
 	}
 
 	if (this.port !== PORT.NONE) {
@@ -73,11 +75,11 @@ function Tile(coordinates, tileType, number, hasRobber, port) {
  * @param transY - the y translation of the board
  * @param scale - the scale to draw at
  */
-Tile.prototype.draw = function(transX, transY, scale) {
+Tile.prototype.draw = function (transX, transY, scale) {
 	var displacement = hexToCartesian(this.coordinates);
 	var tileX = transX + displacement.x * scale;
 	var tileY = transY + displacement.y * scale;
-	
+
 	tileY = tileY - scale * (1 - 1 / Math.sqrt(3)) / 2;
 
 	var wrapper = $("#" + this.id + "-wrapper");
@@ -107,47 +109,47 @@ Tile.prototype.draw = function(transX, transY, scale) {
 			break;
 		case TILE_TYPE.SEA:
 			element.css("background", "none");
-			// element.addClass("sea-color");
+		// element.addClass("sea-color");
 		default:
 			break;
 	}
-	
+
 	// Translate and scale tile
 	wrapper.css("transform", "translate(" + tileX + "px , " + tileY + "px)");
 	wrapper.css("width", TILE_SCALE * scale);
 	wrapper.css("height", TILE_SCALE * scale);
-		
+
 	// Translate number circle to correct location
 	var circleX = -(Math.sqrt(Math.pow(scale / Math.sqrt(3), 2)
-			+ Math.pow(scale, 2)) - scale) / 2 - 0.015 * scale;
+		+ Math.pow(scale, 2)) - scale) / 2 - 0.015 * scale;
 	var circleY = -scale / (2 * Math.sqrt(3));
-		
+
 	// Center number circle inside tile
 	circleX = circleX - NUMBER_CIRCLE_SCALE * scale / 2 + scale / Math.sqrt(3);
 	circleY = circleY - NUMBER_CIRCLE_SCALE * scale / 2 - scale * (1 - 1 / Math.sqrt(3)) / 2;
-		
+
 	numberCircle.css("transform", "translate(" + circleX + "px , " + circleY + "px)");
-		
+
 	// Scale number circle
 	numberCircle.css("width", (scale * NUMBER_CIRCLE_SCALE) + "px");
 	numberCircle.css("height", (scale * NUMBER_CIRCLE_SCALE) + "px");
-		
+
 	if (!(this.tileType === TILE_TYPE.DESERT || this.tileType === TILE_TYPE.SEA)) {
 		// Scale and center tile number
 		numberCircle.css("font-size", (scale * NUMBER_SCALE) + "px");
-		numberCircle.children("span").css("line-height", (scale * NUMBER_CIRCLE_SCALE) + "px");		
-	
+		numberCircle.children("span").css("line-height", (scale * NUMBER_CIRCLE_SCALE) + "px");
+
 		// Add dots
 		var dotsContainer = numberCircle.children(".dots-container");
 		dotsContainer.empty();
-		
+
 		for (var i = 0; i < this.numDots; i++) {
 			dotsContainer.append("<div class='circle number-dot'></div>");
 		}
-		
+
 		// Move dots below number
 		dotsContainer.css("transform", "translate(0px, " + (-scale * NUMBER_CIRCLE_SCALE) * 3 / 4 + "px)");
-		
+
 		// Set size of dots
 		dotsContainer.children().css("height", scale * NUMBER_CIRCLE_DOTS_SCALE);
 		dotsContainer.children().css("width", scale * NUMBER_CIRCLE_DOTS_SCALE);
@@ -172,19 +174,30 @@ Tile.prototype.draw = function(transX, transY, scale) {
 		if (this.tileType !== TILE_TYPE.DESERT) {
 			// Add handlers to show true number on hover
 			numberCircle.off("mouseenter");
-			numberCircle.mouseenter(function(event) {
+			numberCircle.mouseenter(function (event) {
 				var circle = $(this);
 				circle.children().removeClass("hidden");
 				circle.children("img").addClass("hidden");
 			});
 
 			numberCircle.off("mouseleave");
-			numberCircle.mouseleave(function(event) {
+			numberCircle.mouseleave(function (event) {
 				var circle = $(this);
 				circle.children().addClass("hidden");
 				circle.children("img").removeClass("hidden");
 			});
-		}	
+		}
+	}
+
+	// Draw merchant pawn
+	if (this.hasMerchant) {
+		// Add merchant icon overlay on the number circle
+		numberCircle.children(".merchant-icon").remove();
+		numberCircle.append("<img src='images/icon-merchant.svg' alt='Merchant' class='merchant-icon'>");
+		numberCircle.addClass("merchant-circle");
+	} else {
+		numberCircle.children(".merchant-icon").remove();
+		numberCircle.removeClass("merchant-circle");
 	}
 
 	// Draw port
@@ -213,9 +226,11 @@ Tile.prototype.draw = function(transX, transY, scale) {
 				break;
 		}
 
-		var center = {x: (this.portLocations[0].x + this.portLocations[1].x) / 2,
-					  y: (this.portLocations[0].y + this.portLocations[1].y) / 2,
-					  z: (this.portLocations[0].z + this.portLocations[1].z) / 2}
+		var center = {
+			x: (this.portLocations[0].x + this.portLocations[1].x) / 2,
+			y: (this.portLocations[0].y + this.portLocations[1].y) / 2,
+			z: (this.portLocations[0].z + this.portLocations[1].z) / 2
+		}
 		var cartCenter = hexToCartesian(center);
 
 		var size = PORT_SCALE * scale;
@@ -241,14 +256,14 @@ Tile.prototype.draw = function(transX, transY, scale) {
  * Returns whether this tile can have the robber placed on it
  * @return whether this tile can have the robber placed on it
  */
-Tile.prototype.isRobbable = function() {
-	return !(this.tileType === TILE_TYPE.SEA || this.hasRobber); 
+Tile.prototype.isRobbable = function () {
+	return !(this.tileType === TILE_TYPE.SEA || this.hasRobber);
 }
 
 /*
  * Highlights this tile
  */
-Tile.prototype.highlight = function() {
+Tile.prototype.highlight = function () {
 	// Highlight circle
 	var numberCircle = $("#" + this.id + "-wrapper .number-circle");
 	numberCircle.addClass("number-circle-highlighted");
@@ -257,7 +272,7 @@ Tile.prototype.highlight = function() {
 	// Add robber click handler
 	var that = this;
 	numberCircle.off("click");
-	numberCircle.click(function(event) {
+	numberCircle.click(function (event) {
 		moveRobberMode = false;
 		sendMoveRobberAction(that.coordinates);
 		exitPlaceRobberMode();
@@ -267,7 +282,7 @@ Tile.prototype.highlight = function() {
 /*
  * Unhighlights this tile.
  */
-Tile.prototype.unHighlight = function() {
+Tile.prototype.unHighlight = function () {
 	if (this.highlighted) {
 		var numberCircle = $("#" + this.id + "-wrapper .number-circle");
 		numberCircle.removeClass("number-circle-highlighted");
@@ -355,11 +370,11 @@ function parseTileType(tileType) {
  * @return the cartesian coordinate
  */
 function hexToCartesian(hexCoordinates) {
-	var x = X_UNIT_VEC.x * hexCoordinates.x + Y_UNIT_VEC.x * hexCoordinates.y 
-			+ Z_UNIT_VEC.x * hexCoordinates.z;
-	var y = X_UNIT_VEC.y * hexCoordinates.x + Y_UNIT_VEC.y * hexCoordinates.y 
-			+ Z_UNIT_VEC.y * hexCoordinates.z;
-	return {x: x, y: y};
+	var x = X_UNIT_VEC.x * hexCoordinates.x + Y_UNIT_VEC.x * hexCoordinates.y
+		+ Z_UNIT_VEC.x * hexCoordinates.z;
+	var y = X_UNIT_VEC.y * hexCoordinates.x + Y_UNIT_VEC.y * hexCoordinates.y
+		+ Z_UNIT_VEC.y * hexCoordinates.z;
+	return { x: x, y: y };
 }
 
 /*
@@ -368,7 +383,7 @@ function hexToCartesian(hexCoordinates) {
  * @return the parsed hex coordinate
  */
 function parseHexCoordinates(hexCoordinates) {
-	return {x: hexCoordinates.x, y: hexCoordinates.y, z: hexCoordinates.z};
+	return { x: hexCoordinates.x, y: hexCoordinates.y, z: hexCoordinates.z };
 }
 
 /*
@@ -382,8 +397,8 @@ function findCenter(c1, c2, c3) {
 	var x = (c1.x + c2.x + c3.x) / 3;
 	var y = (c1.y + c2.y + c3.y) / 3;
 	var z = (c1.z + c2.z + c3.z) / 3;
-	
-	return {x: x, y: y, z: z};
+
+	return { x: x, y: y, z: z };
 }
 
 

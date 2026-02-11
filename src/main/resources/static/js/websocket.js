@@ -376,6 +376,25 @@ function sendDeserterTargetAction(targetPlayer, coordinate) {
 	webSocket.send(JSON.stringify(req));
 }
 
+function sendPlaceMerchantAction(hex) {
+	var req = {
+		requestType: "action",
+		action: "placeMerchant",
+		hex: hex
+	};
+	webSocket.send(JSON.stringify(req));
+}
+
+function sendChooseDiceAction(redDie, whiteDie) {
+	var req = {
+		requestType: "action",
+		action: "chooseDice",
+		redDie: redDie,
+		whiteDie: whiteDie
+	};
+	webSocket.send(JSON.stringify(req));
+}
+
 function sendProposeTradeAction(trade) {
 	var tradeReq = {
 		requestType: "action",
@@ -648,6 +667,12 @@ function handleFollowUp(action) {
 		case "deserterTarget":
 			enterDeserterTargetMode();
 			break;
+		case "placeMerchant":
+			enterPlaceMerchantMode();
+			break;
+		case "chooseDice":
+			enterChooseDiceModal();
+			break;
 		default:
 			break;
 	}
@@ -718,6 +743,20 @@ function handleGetGameState(gameStateData) {
 	board = new Board();
 	board.createBoard(gameStateData.board);
 	board.draw();
+
+	// Mark merchant tile if present
+	if (gameStateData.merchantHex && gameStateData.merchantOwner !== undefined) {
+		var mHex = gameStateData.merchantHex;
+		for (var i = 0; i < board.tiles.length; i++) {
+			var t = board.tiles[i];
+			if (t.coordinates.x === mHex.x && t.coordinates.y === mHex.y && t.coordinates.z === mHex.z) {
+				t.hasMerchant = true;
+				t.merchantOwner = gameStateData.merchantOwner;
+				t.draw(board.transX, board.transY, board.scaleFactor);
+				break;
+			}
+		}
+	}
 
 	// If in place road mode, enter build rode mode
 	if (inPlaceRoadMode) {

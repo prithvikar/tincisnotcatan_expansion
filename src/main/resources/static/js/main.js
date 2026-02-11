@@ -1533,3 +1533,91 @@ function exitDeserterTargetMode() {
 	}
 }
 
+/**
+ * Merchant: enter a mode where the player clicks a land hex adjacent
+ * to one of their buildings to place the merchant pawn.
+ */
+var inPlaceMerchantMode = false;
+
+function enterPlaceMerchantMode() {
+	inPlaceMerchantMode = true;
+	addMessage("Click on a land hex adjacent to your building to place the Merchant.");
+
+	for (var i = 0; i < board.tiles.length; i++) {
+		var tile = board.tiles[i];
+		if (tile.tileType === TILE_TYPE.SEA || tile.tileType === TILE_TYPE.DESERT) {
+			continue;
+		}
+		// Check if this tile is adjacent to any of our buildings
+		var isAdjacent = false;
+		for (var j = 0; j < board.intersections.length; j++) {
+			var inter = board.intersections[j];
+			if (inter.building && inter.building.owner === playerId) {
+				var coords = inter.coordinates;
+				if ((coords.coord1.x === tile.coordinates.x && coords.coord1.y === tile.coordinates.y && coords.coord1.z === tile.coordinates.z) ||
+					(coords.coord2.x === tile.coordinates.x && coords.coord2.y === tile.coordinates.y && coords.coord2.z === tile.coordinates.z) ||
+					(coords.coord3.x === tile.coordinates.x && coords.coord3.y === tile.coordinates.y && coords.coord3.z === tile.coordinates.z)) {
+					isAdjacent = true;
+					break;
+				}
+			}
+		}
+		if (isAdjacent) {
+			// Highlight the tile and add a click handler
+			var numberCircle = $("#" + tile.id + "-wrapper .number-circle");
+			numberCircle.addClass("number-circle-highlighted");
+			tile.highlighted = true;
+
+			(function (t) {
+				numberCircle.off("click");
+				numberCircle.click(function (event) {
+					sendPlaceMerchantAction(t.coordinates);
+					exitPlaceMerchantMode();
+				});
+			})(tile);
+		}
+	}
+}
+
+function exitPlaceMerchantMode() {
+	inPlaceMerchantMode = false;
+	for (var i = 0; i < board.tiles.length; i++) {
+		if (board.tiles[i].highlighted) {
+			board.tiles[i].unHighlight();
+		}
+	}
+}
+
+/**
+ * Alchemist: show a modal where the player picks red die (1-6) and white die (1-6).
+ */
+function enterChooseDiceModal() {
+	var bodyHtml = '<p>Choose values for both dice (1-6 each):</p>'
+		+ '<div class="form-group"><label>Red Die:</label>'
+		+ '<select id="alchemist-red-die" class="form-control" style="width:80px;display:inline-block;margin-left:8px;">'
+		+ '<option value="1">1</option><option value="2">2</option><option value="3">3</option>'
+		+ '<option value="4">4</option><option value="5">5</option><option value="6">6</option>'
+		+ '</select></div>'
+		+ '<div class="form-group"><label>White Die:</label>'
+		+ '<select id="alchemist-white-die" class="form-control" style="width:80px;display:inline-block;margin-left:8px;">'
+		+ '<option value="1">1</option><option value="2">2</option><option value="3">3</option>'
+		+ '<option value="4">4</option><option value="5">5</option><option value="6">6</option>'
+		+ '</select></div>';
+
+	var $modal = createDynamicModal("alchemist-modal", "Alchemist", bodyHtml, "Confirm");
+	// Dropdowns always have a valid default value, so enable confirm immediately
+	$("#alchemist-modal-confirm").prop("disabled", false);
+
+	$("#alchemist-modal-confirm").click(function () {
+		var redDie = parseInt($("#alchemist-red-die").val());
+		var whiteDie = parseInt($("#alchemist-white-die").val());
+		sendChooseDiceAction(redDie, whiteDie);
+		$modal.modal("hide");
+	});
+
+	$modal.on("hidden.bs.modal", function () {
+		$modal.remove();
+	});
+
+	$modal.modal("show");
+}

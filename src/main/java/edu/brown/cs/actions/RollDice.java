@@ -62,8 +62,15 @@ public class RollDice implements FollowUpAction {
     }
     Random r = new Random();
     PrimitiveIterator.OfInt rolls = r.ints(1, 7).iterator();
-    int redDie = rolls.nextInt();
-    int whiteDie = rolls.nextInt();
+    int[] override = _ref.consumeOverriddenDice();
+    int redDie, whiteDie;
+    if (override != null) {
+      redDie = override[0];
+      whiteDie = override[1];
+    } else {
+      redDie = rolls.nextInt();
+      whiteDie = rolls.nextInt();
+    }
     int diceRoll = redDie + whiteDie;
     _ref.getGameStats().addRoll(diceRoll);
     Map<Integer, Map<Resource, Integer>> playerResourceCount = new HashMap<>();
