@@ -49,8 +49,29 @@
             <div id="white-die-val" class="die white-die" title="White Production Die">?</div>
             <div id="event-die-val" class="die event-die" title="Event Die">?</div>
         </div>
+        
+        <!-- Barbarian Track (C&K) -->
+        <div id="barbarian-track-container" class="hidden">
+            <div class="track-title">Barbarian Invasion</div>
+            <div class="track-steps">
+                <!-- 7 steps: 0 (start) to 7 (attack) -->
+                <div class="track-step step-0 active" id="track-step-0"></div>
+                <div class="track-step step-1" id="track-step-1"></div>
+                <div class="track-step step-2" id="track-step-2"></div>
+                <div class="track-step step-3" id="track-step-3"></div>
+                <div class="track-step step-4" id="track-step-4"></div>
+                <div class="track-step step-5" id="track-step-5"></div>
+                <div class="track-step step-6" id="track-step-6"></div>
+                <div class="track-step step-7 attack-zone" id="track-step-7" title="Attack!"></div>
+            </div>
+            <div id="barbarian-ship-token" class="ship-token">
+                <img src="images/icon-barbarian-ship.svg" width="30" height="30">
+            </div>
+        </div>
 
 		<div id="turn-display-container"></div>
+<button onclick="debugCK()" style="position:absolute; top:50px; right:300px; z-index:1000; background:red; color:white; padding:5px;">DEBUG C&K</button>
+
 		<input type="button" class="btn btn-primary" id="end-turn-btn" value="End Turn"><br>
 		<div id="chat-container">
 		    <div id="chat"></div>
@@ -441,19 +462,19 @@
 			<ul class="nav navbar-nav navbar-left hidden" id="ck-commodities-container">
 				<li class="navbar-btn" style="border-left: 2px solid #666; padding-left: 8px;">
 					<div class="circle card-circle" style="background-color: #d4a574" data-toggle="tooltip" data-placement="top" title="Paper">
-						<span style="font-size:14px; font-weight:bold">P</span>
+						<img src="images/icon-paper.svg" alt="Paper">
 					</div>
 					<div class="card-number" id="paper-number">0</div>
 				</li>
 				<li class="navbar-btn">
 					<div class="circle card-circle" style="background-color: #c47ac0" data-toggle="tooltip" data-placement="top" title="Cloth">
-						<span style="font-size:14px; font-weight:bold">C</span>
+						<img src="images/icon-cloth.svg" alt="Cloth">
 					</div>
 					<div class="card-number" id="cloth-number">0</div>
 				</li>
 				<li class="navbar-btn">
 					<div class="circle card-circle" style="background-color: #ffd700" data-toggle="tooltip" data-placement="top" title="Coin">
-						<span style="font-size:14px; font-weight:bold">$</span>
+						<img src="images/icon-coin.svg" alt="Coin">
 					</div>
 					<div class="card-number" id="coin-number">0</div>
 				</li>

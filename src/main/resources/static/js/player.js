@@ -249,8 +249,14 @@ function fillPlayerHand(handData) {
 		if (handData.progressCards.length > 0) {
 			for (var i = 0; i < handData.progressCards.length; i++) {
 				var cardName = handData.progressCards[i];
-				// Create button using jQuery
-				var $btn = $("<button class='btn btn-xs btn-info progress-card-btn' style='margin-right:5px; margin-bottom:2px;' title='Play " + cardName + "'>" + cardName + "</button>");
+				var cardType = getProgressCardType(cardName);
+				var iconName = "icon-progress-" + cardType + ".svg";
+
+				// Create button using jQuery with icon
+				var $btn = $("<button class='btn btn-xs btn-info progress-card-btn' style='margin-right:5px; margin-bottom:2px;' title='Play " + cardName + "'>"
+					+ "<img src='images/" + iconName + "' style='height:16px; width:16px; margin-right:4px; vertical-align:text-bottom;'>"
+					+ cardName + "</button>");
+
 				// Attach click handler via closure or data attribute
 				$btn.attr("data-card", cardName);
 				$btn.click(function () {
@@ -265,6 +271,17 @@ function fillPlayerHand(handData) {
 		}
 		$("#ck-progress-cards-panel").removeClass("hidden");
 	}
+}
+
+function getProgressCardType(cardName) {
+	var tradeCards = ["Commercial Harbor", "Master Merchant", "Merchant", "Merchant Fleet", "Resource Monopoly", "Trade Monopoly"];
+	var politicsCards = ["Bishop", "Constitution", "Deserter", "Diplomat", "Intrigue", "Saboteur", "Spy", "Warlord", "Wedding"];
+	var scienceCards = ["Alchemist", "Crane", "Engineer", "Inventor", "Irrigation", "Medicine", "Mining", "Printer", "Road Building", "Smith"];
+
+	if (tradeCards.indexOf(cardName) !== -1) return "trade";
+	if (politicsCards.indexOf(cardName) !== -1) return "politics";
+	if (scienceCards.indexOf(cardName) !== -1) return "science";
+	return "science"; // Default fallback
 }
 
 /*

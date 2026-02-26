@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <circle cx="50" cy="50" r="45" fill="#4caf50" stroke="#2e7d32" stroke-width="3"/>
+  <!-- Flask -->
+  <path d="M40,30 L40,20 L60,20 L60,30 L70,50 L70,80 Q70,90 60,90 L40,90 Q30,90 30,80 L30,50 Z" fill="#e8f5e9" stroke="#1b5e20" stroke-width="2"/>
+  <circle cx="45" cy="70" r="3" fill="#81c784"/>
+  <circle cx="55" cy="60" r="2" fill="#81c784"/>
+</svg>

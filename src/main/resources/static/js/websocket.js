@@ -744,6 +744,21 @@ function handleGetGameState(gameStateData) {
 	board.createBoard(gameStateData.board);
 	board.draw();
 
+	// C&K: Update Barbarian Track
+	if (gameStateData.hasOwnProperty("barbarianPosition") && gameSettings.isCitiesAndKnights) {
+		var pos = gameStateData.barbarianPosition;
+		// Hide all ships first or just move it
+		$("#barbarian-track-container").removeClass("hidden");
+		$(".track-step").removeClass("active");
+
+		// Ensure pos is valid (0-7)
+		if (pos >= 0 && pos <= 7) {
+			$("#track-step-" + pos).addClass("active");
+			// Move the ship token to the active step
+			$("#track-step-" + pos).append($("#barbarian-ship-token"));
+		}
+	}
+
 	// Mark merchant tile if present
 	if (gameStateData.merchantHex && gameStateData.merchantOwner !== undefined) {
 		var mHex = gameStateData.merchantHex;
@@ -875,3 +890,42 @@ function insert(targetId, message) {
 function id(id) {
 	return document.getElementById(id);
 }
+
+// DEBUG C&K STATE
+window.debugCK = function () {
+	var mockState = {
+		playerID: 0,
+		currentTurn: 0,
+		settings: { isCitiesAndKnights: true, isDecimal: false },
+		players: [
+			{ id: 0, name: "TestPlayer", color: "#ff0000", victoryPoints: 2, numResourceCards: 5, numDevelopmentCards: 0, numKnights: 3, activeKnightStrength: 3, defenderPoints: 0, cityWalls: 0, cityImprovements: { trade: 1, politics: 2, science: 3 }, numProgressCards: 3 },
+			{ id: 1, name: "AI", color: "#0000ff", victoryPoints: 0, numResourceCards: 0, numDevelopmentCards: 0, numKnights: 0, activeKnightStrength: 0, defenderPoints: 0, cityWalls: 0, cityImprovements: { trade: 0, politics: 0, science: 0 }, numProgressCards: 0 }
+		],
+		hand: {
+			resources: { brick: 0, wood: 0, ore: 0, wheat: 0, sheep: 0 },
+			devCards: { "Knight": 0, "Year of Plenty": 0, "Monopoly": 0, "Road Building": 0, "Victory Point": 0 },
+			commodities: { PAPER: 2, CLOTH: 3, COIN: 4 },
+			progressCards: ["Alchemist", "Bishop", "Merchant"],
+			canBuildRoad: true, canBuildSettlement: true, canBuildCity: true, canBuyDevCard: true
+		},
+		board: {
+			tiles: [
+				{ hexCoordinate: { x: 0, y: 0, z: 0 }, type: "WHEAT", number: 12, hasRobber: false, portLocations: [] },
+				{ hexCoordinate: { x: 1, y: -1, z: 0 }, type: "ORE", number: 8, hasRobber: false, portLocations: [] }
+			],
+			intersections: [
+				{ coordinate: { coord1: { x: 0, y: 0, z: 0 }, coord2: { x: 1, y: 0, z: -1 }, coord3: { x: 1, y: -1, z: 0 } }, building: { type: "knight", player: 0, level: 1, active: true } },
+				{ coordinate: { coord1: { x: 0, y: 0, z: 0 }, coord2: { x: 0, y: -1, z: 1 }, coord3: { x: -1, y: 0, z: 1 } }, building: { type: "knight", player: 0, level: 2, active: false } },
+				{ coordinate: { coord1: { x: 0, y: 0, z: 0 }, coord2: { x: -1, y: 1, z: 0 }, coord3: { x: 0, y: 1, z: -1 } }, building: { type: "knight", player: 0, level: 3, active: true } }
+			],
+			paths: []
+		},
+		stats: { rolls: [], turn: 1 },
+		turnOrder: [0, 1],
+		barbarianPosition: 3,
+		merchantHex: { x: 0, y: 0, z: 0 },
+		merchantOwner: 0
+	};
+	handleGetGameState(mockState);
+	console.log("Injected C&K Mock State");
+};

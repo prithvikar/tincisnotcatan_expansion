@@ -14,7 +14,8 @@ var CITY_SVG = '<svg class="city-icon">'
 var BUILDING = {
 	NONE: 1,
 	SETTLEMENT: 2,
-	CITY: 3
+	CITY: 3,
+	KNIGHT: 4
 }
 
 /*
@@ -31,6 +32,8 @@ function Intersection(coord1, coord2, coord3) {
 
 	this.building = BUILDING.NONE;
 	this.player;
+	this.knightLevel = 1;
+	this.knightActive = false;
 
 	this.port = PORT.NONE;
 
@@ -106,6 +109,39 @@ Intersection.prototype.draw = function (transX, transY, scale) {
 			}
 
 			break;
+		case BUILDING.KNIGHT:
+			var size = scale * SETTLEMENT_SCALE * 1.5; // Slightly larger for knights
+			var x = transX + displacement.x * scale + Math.sqrt(3) * scale / 4 - size / 4;
+			var y = transY + displacement.y * scale + scale / 4 - size / 2;
+
+			var iconName = "icon-knight-basic.svg";
+			if (this.knightLevel === 2) iconName = "icon-knight-strong.svg";
+			else if (this.knightLevel === 3) iconName = "icon-knight-mighty.svg";
+
+			var imgHtml = "<img src='images/" + iconName + "' class='knight-icon' style='width:100%; height:100%;'>";
+			element.append(imgHtml);
+
+			element.css("transform", "translate(" + x + "px, " + y + "px)");
+			element.css("width", size);
+			element.css("height", size);
+
+			// Style based on active status
+			if (!this.knightActive) {
+				element.css("opacity", "0.6");
+				element.css("filter", "grayscale(100%)");
+			} else {
+				element.css("opacity", "1.0");
+				element.css("filter", "none");
+			}
+
+			// Add a colored border/background to indicate owner?
+			// The SVG itself is black/white usually. 
+			// We can wrap it in a div with border-color = player.color
+			element.css("border", "2px solid " + this.player.color);
+			element.css("border-radius", "50%");
+			element.css("background-color", "rgba(255,255,255,0.7)");
+
+			break;
 		default:
 			break;
 	}
@@ -146,6 +182,13 @@ Intersection.prototype.addCity = function (player, metropolis) {
 	this.metropolis = metropolis;
 }
 
+Intersection.prototype.addKnight = function (player, level, active) {
+	this.building = BUILDING.KNIGHT;
+	this.player = player;
+	this.knightLevel = level;
+	this.knightActive = active;
+}
+
 /*
  * Creates an intersection click handler for building cities and settlements.
  */
@@ -156,6 +199,9 @@ Intersection.prototype.createIntersectionClickHandler = function () {
 			if (inPlaceSettlementMode) {
 				sendPlaceSettlementAction(that.intersectCoordinates);
 				exitPlaceSettlementMode();
+			} else if (inPlaceKnightMode) { // Need to ensure this global exists or logic handles it
+				sendPlaceKnightAction(that.intersectCoordinates);
+				exitPlaceKnightMode();
 			} else {
 				sendBuildSettlementAction(that.intersectCoordinates);
 				exitBuildMode();
@@ -163,6 +209,20 @@ Intersection.prototype.createIntersectionClickHandler = function () {
 		} else if (that.building === BUILDING.SETTLEMENT) {
 			sendBuildCityAction(that.intersectCoordinates);
 			exitBuildMode();
+		} else if (that.building === BUILDING.KNIGHT) {
+			// Handle knight clicks (activate, promote, displace?)
+			// For now, maybe just log or handle elsewhere. 
+			// Usually handled by specific modes (activate/promote buttons then click knight).
+			if (inActivateKnightMode) {
+				sendActivateKnightAction(that.intersectCoordinates);
+				exitActivateKnightMode();
+			} else if (inPromoteKnightMode) {
+				sendPromoteKnightAction(that.intersectCoordinates);
+				exitPromoteKnightMode();
+			} else if (inDisplaceKnightMode) { // This mode exists in main.js
+				sendDisplaceKnightAction(that.intersectCoordinates);
+				exitDisplaceKnightMode();
+			}
 		}
 	};
 }
@@ -212,6 +272,8 @@ function parseIntersection(data) {
 			intersect.addSettlement(player);
 		} else if (data.building.type === "city") {
 			intersect.addCity(player, data.building.metropolis);
+		} else if (data.building.type === "knight") {
+			intersect.addKnight(player, data.building.level, data.building.active);
 		}
 	}
 
@@ -244,3 +306,4 @@ function parseIntersection(data) {
 
 	return intersect;
 }
+

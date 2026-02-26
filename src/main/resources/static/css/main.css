@@ -706,3 +706,58 @@ body {
 	overflow-y: auto;
 	margin-bottom: 0px;
 }
+
+/* C&K Barbarian Track */
+#barbarian-track-container {
+    background: rgba(255, 255, 255, 0.9);
+    padding: 8px;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    text-align: center;
+}
+
+.track-title {
+    font-weight: bold;
+    font-size: 12px;
+    margin-bottom: 5px;
+    text-transform: uppercase;
+    color: #333;
+}
+
+.track-steps {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 5px;
+    padding: 0 5px;
+}
+
+.track-step {
+    width: 25px;
+    height: 25px;
+    border: 2px solid #757575;
+    border-radius: 50%;
+    background-color: #e0e0e0;
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.track-step.attack-zone {
+    border-color: #d32f2f;
+    background-color: #ffcdd2;
+    width: 30px;
+    height: 30px; /* Slightly larger for the end */
+}
+
+/* Ship Token styling */
+.ship-token {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 10;
+}

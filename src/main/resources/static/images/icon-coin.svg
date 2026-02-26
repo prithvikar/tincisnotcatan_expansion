@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <!-- Stack of Coins -->
+  <g stroke="#b8860b" stroke-width="2">
+    <ellipse cx="50" cy="80" rx="30" ry="10" fill="#ffd700" />
+    <path d="M20,80 V70 A30,10 0 0,0 80,70 V80" fill="#ffd700" />
+    <path d="M20,70 V60 A30,10 0 0,0 80,60 V70" fill="#ffd700" />
+    <path d="M20,60 V50 A30,10 0 0,0 80,50 V60" fill="#ffd700" />
+    <ellipse cx="50" cy="50" rx="30" ry="10" fill="#ffd700" />
+    <text x="50" y="55" font-family="serif" font-size="20" text-anchor="middle" fill="#b8860b">$</text>
+  </g>
+</svg>
