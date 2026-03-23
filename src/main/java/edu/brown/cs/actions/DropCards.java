@@ -7,6 +7,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
 
+import edu.brown.cs.catan.Commodity;
 import edu.brown.cs.catan.Player;
 import edu.brown.cs.catan.Referee;
 import edu.brown.cs.catan.Resource;
@@ -26,6 +27,7 @@ public class DropCards implements FollowUpAction {
   private Referee _ref;
   private Player _player;
   private Map<Resource, Double> _toDrop;
+  private Map<Commodity, Double> _commodityToDrop;
   private final static double TOLERANCE = 0.001;
   public final static String ID = "dropCards";
   private final static String VERB = "discard";
@@ -51,6 +53,15 @@ public class DropCards implements FollowUpAction {
       }
       droppedCards += res.getValue();
     }
+    if (_commodityToDrop != null) {
+      for (Map.Entry<Commodity, Double> entry : _commodityToDrop.entrySet()) {
+        if (!_player.hasCommodity(entry.getKey(), entry.getValue())) {
+          return ImmutableMap.of(_player.getID(), new ActionResponse(false,
+              "You do not have the commodities you are attempting to drop.", null));
+        }
+        droppedCards += entry.getValue();
+      }
+    }
     if (Math.abs(droppedCards - _numToDrop) > TOLERANCE) {
       return ImmutableMap.of(_player.getID(), new ActionResponse(false,
           "You did not drop enough cards. Please try again.", null));
@@ -59,6 +70,11 @@ public class DropCards implements FollowUpAction {
     // Action:
     for (Map.Entry<Resource, Double> res : _toDrop.entrySet()) {
       _player.removeResource(res.getKey(), res.getValue(), _ref.getBank());
+    }
+    if (_commodityToDrop != null) {
+      for (Map.Entry<Commodity, Double> entry : _commodityToDrop.entrySet()) {
+        _player.removeCommodity(entry.getKey(), entry.getValue());
+      }
     }
     _ref.removeFollowUp(this);
 
@@ -102,6 +118,17 @@ public class DropCards implements FollowUpAction {
       for (Resource res : Resource.values()) {
         if (res != Resource.WILDCARD) {
           _toDrop.put(res, params.get(res.toString()).getAsDouble());
+        }
+      }
+      // C&K: parse commodity drops if present
+      if (ref.getGameSettings().isCitiesAndKnights) {
+        _commodityToDrop = new HashMap<>();
+        for (Commodity c : Commodity.values()) {
+          if (params.has(c.toString())) {
+            _commodityToDrop.put(c, params.get(c.toString()).getAsDouble());
+          } else {
+            _commodityToDrop.put(c, 0.0);
+          }
         }
       }
     } catch (JsonSyntaxException | NullPointerException e) {

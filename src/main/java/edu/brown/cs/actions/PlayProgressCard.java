@@ -412,7 +412,7 @@ public class PlayProgressCard implements Action {
         }
         break;
 
-      // --- Wedding: players with more VPs give you 2 resources each ---
+      // --- Wedding: players with more VPs give you 2 resources/commodities each ---
       case WEDDING: {
         int myVPs = _player.numVictoryPoints();
         int totalGained = 0;
@@ -420,6 +420,7 @@ public class PlayProgressCard implements Action {
           if (p.getID() != _player.getID()
               && p.numVictoryPoints() > myVPs) {
             int given = 0;
+            // Take resources first
             for (Resource r : Resource.values()) {
               if (r == Resource.WILDCARD || given >= 2) {
                 break;
@@ -431,6 +432,22 @@ public class PlayProgressCard implements Action {
                 _player.addResource(r, canGive);
                 given += canGive;
                 totalGained += canGive;
+              }
+            }
+            // Then take commodities if still under 2
+            if (_ref.getGameSettings().isCitiesAndKnights && given < 2) {
+              for (edu.brown.cs.catan.Commodity c : edu.brown.cs.catan.Commodity.values()) {
+                if (given >= 2) {
+                  break;
+                }
+                double has = p.getCommodities().getOrDefault(c, 0.0);
+                int canGive = (int) Math.min(has, 2 - given);
+                if (canGive > 0) {
+                  p.removeCommodity(c, canGive);
+                  _player.addCommodity(c, canGive);
+                  given += canGive;
+                  totalGained += canGive;
+                }
               }
             }
           }

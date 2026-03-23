@@ -475,6 +475,15 @@ function enterDiscardModal(numToDiscard) {
 		wheat: playerHand.wheat,
 		sheep: playerHand.sheep
 	};
+	// C&K: include commodities in discard hand
+	if (playerHand.paper !== undefined) {
+		currHand.paper = playerHand.paper;
+		currHand.cloth = playerHand.cloth;
+		currHand.coin = playerHand.coin;
+		$(".ck-discard-commodities").show();
+	} else {
+		$(".ck-discard-commodities").hide();
+	}
 	redrawHand();
 
 	function redrawHand() {
@@ -484,6 +493,11 @@ function enterDiscardModal(numToDiscard) {
 		$("#discard-hand-number-ore").text(formatNumber(currHand.ore));
 		$("#discard-hand-number-wheat").text(formatNumber(currHand.wheat));
 		$("#discard-hand-number-sheep").text(formatNumber(currHand.sheep));
+		if (currHand.paper !== undefined) {
+			$("#discard-hand-number-paper").text(formatNumber(currHand.paper));
+			$("#discard-hand-number-cloth").text(formatNumber(currHand.cloth));
+			$("#discard-hand-number-coin").text(formatNumber(currHand.coin));
+		}
 	}
 
 	$(".discard-number").change(function (event) {

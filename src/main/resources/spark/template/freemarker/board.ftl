@@ -646,6 +646,37 @@
 				    	</div>
 				    </div>
 			    </div>
+			    <!-- C&K: Commodity discard inputs (hidden in base game) -->
+			    <div class="text-center ck-discard-commodities" style="display:none; margin-top:10px;">
+			    	<hr><p><strong>Commodities</strong></p>
+			    	<div class="discard-resource-container">
+		       			<div class="circle discard-circle" style="background-color:#e8d5b0;">
+							<span style="font-weight:bold;font-size:14px;">P</span>
+						</div>
+						<div class="text-center">
+							<h5 class="discard-hand-number" id="discard-hand-number-paper"></h5>
+				    		<input type="number" class="form-control discard-number" max="0" res="paper" data-toggle="tooltip" data-placement="bottom" title="Enter a negative value to discard." data-trigger="hover">
+				    	</div>
+				    </div>
+				    <div class="discard-resource-container">
+		       			<div class="circle discard-circle" style="background-color:#d4a0c0;">
+							<span style="font-weight:bold;font-size:14px;">C</span>
+						</div>
+						<div class="text-center">
+							<h5 class="discard-hand-number" id="discard-hand-number-cloth"></h5>
+				    		<input type="number" class="form-control discard-number" max="0" res="cloth" data-toggle="tooltip" data-placement="bottom" title="Enter a negative value to discard." data-trigger="hover">
+				    	</div>
+				    </div>
+				    <div class="discard-resource-container">
+		       			<div class="circle discard-circle" style="background-color:#c0c0c0;">
+							<span style="font-weight:bold;font-size:14px;">$</span>
+						</div>
+						<div class="text-center">
+							<h5 class="discard-hand-number" id="discard-hand-number-coin"></h5>
+				    		<input type="number" class="form-control discard-number" max="0" res="coin" data-toggle="tooltip" data-placement="bottom" title="Enter a negative value to discard." data-trigger="hover">
+				    	</div>
+				    </div>
+			    </div>
       		</div>
       		<div class="modal-footer">
         		<button type="button" class="btn btn-primary" id="discard-btn" disabled="disabled">Discard</button>

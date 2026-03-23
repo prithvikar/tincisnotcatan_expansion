@@ -45,11 +45,14 @@ public class TradeCommodityWithBank implements Action {
           "You can only trade with the bank on your turn.", null));
     }
 
-    // Check Trade track level >= 3
+    // Check Trade track level >= 3 OR Merchant Fleet active
     CityImprovement ci = _player.getCityImprovement();
-    if (ci == null || ci.getLevel(CityImprovement.Track.TRADE) < 3) {
+    boolean hasTrade3 = ci != null
+        && ci.getLevel(CityImprovement.Track.TRADE) >= 3;
+    boolean hasMerchantFleet = _ref.getTurn().hasMerchantFleet();
+    if (!hasTrade3 && !hasMerchantFleet) {
       return ImmutableMap.of(_player.getID(), new ActionResponse(false,
-          "You need Trade track level 3 to trade commodities at 2:1.", null));
+          "You need Trade track level 3 or Merchant Fleet to trade commodities at 2:1.", null));
     }
 
     // Check player has 2 of the commodity
