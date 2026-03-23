@@ -1231,7 +1231,9 @@ function buildExtrasTab() {
 	$("#game-stats-container").append("<p><strong>Turn: </strong>" + gameStats.turn + "</p>");
 
 	// C&K: Show barbarian track in extras if available
+	console.log("=== buildExtrasTab C&K check ===", gameSettings, gameSettings ? gameSettings.isCitiesAndKnights : "no settings");
 	if (gameSettings.isCitiesAndKnights) {
+		console.log("=== CALLING revealCKUI ===");
 		revealCKUI();
 	}
 }
@@ -1240,6 +1242,11 @@ function buildExtrasTab() {
  * Reveals Cities & Knights UI elements that are hidden by default.
  */
 function revealCKUI() {
+	console.log("=== revealCKUI called ===");
+	console.log("ck-build-option count:", $(".ck-build-option").length);
+	console.log("ck-commodities-container count:", $("#ck-commodities-container").length);
+	console.log("ck-progress-cards-panel count:", $("#ck-progress-cards-panel").length);
+	console.log("barbarian-track-container count:", $("#barbarian-track-container").length);
 	$(".ck-build-option").removeClass("hidden");
 	$("#ck-commodities-container").removeClass("hidden");
 	$("#ck-progress-cards-panel").removeClass("hidden");

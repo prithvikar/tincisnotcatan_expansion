@@ -717,6 +717,11 @@ function handleFollowUp(action) {
  * @param gameStateData - the game state data
  */
 function handleGetGameState(gameStateData) {
+	console.log("=== GAME STATE DEBUG ===");
+	console.log("settings:", JSON.stringify(gameStateData.settings));
+	console.log("isCitiesAndKnights:", gameStateData.settings ? gameStateData.settings.isCitiesAndKnights : "NO SETTINGS");
+	console.log("barbarianTrack:", JSON.stringify(gameStateData.barbarianTrack));
+	console.log("hand:", JSON.stringify(gameStateData.hand));
 	// Set global data
 	playerId = gameStateData.playerID;
 	currentPlayerTurn = gameStateData.currentTurn;
