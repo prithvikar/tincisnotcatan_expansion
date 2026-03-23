@@ -9,9 +9,11 @@ import java.util.Random;
 
 import com.google.gson.JsonObject;
 
+import edu.brown.cs.board.City;
 import edu.brown.cs.board.Intersection;
 import edu.brown.cs.board.Tile;
 import edu.brown.cs.catan.CityImprovement;
+import edu.brown.cs.catan.Commodity;
 import edu.brown.cs.catan.KnightPiece;
 import edu.brown.cs.catan.MasterReferee;
 import edu.brown.cs.catan.Player;
@@ -113,6 +115,30 @@ public class RollDice implements FollowUpAction {
           }
         }
       }
+      // C&K: Convert half of city production to commodities on commodity tiles.
+      // Cities on forest/pasture/mountain produce 1 resource + 1 commodity
+      // instead of 2 resources.
+      if (_ref.getGameSettings().isCitiesAndKnights) {
+        for (Tile t : tiles) {
+          if (t.getRollNumber() == diceRoll && !t.hasRobber()) {
+            Resource tileRes = t.getType().getType();
+            Commodity commodity = Commodity.fromResource(tileRes);
+            if (commodity != null) {
+              // This tile produces a commodity — check for cities
+              for (Intersection inter : t.getIntersections()) {
+                if (inter.getBuilding() != null
+                    && inter.getBuilding() instanceof City) {
+                  int pid = inter.getBuilding().getPlayer().getID();
+                  Player p = _ref.getPlayerByID(pid);
+                  // City produced 2 resources; convert 1 to commodity
+                  p.removeResource(tileRes, 1.0, _ref.getBank());
+                  p.addCommodity(commodity, 1.0);
+                }
+              }
+            }
+          }
+        }
+      }
       for (Integer playerID : playerResourceCount.keySet()) {
         StringBuilder message = new StringBuilder();
         message.append(String.format("%d was rolled", diceRoll));
@@ -184,8 +210,15 @@ public class RollDice implements FollowUpAction {
         if (_ref.getGameSettings().isCitiesAndKnights) {
           threshold += p.getCityWallCount() * Settings.CITY_WALL_HAND_BONUS;
         }
-        if (p.getNumResourceCards() > threshold) {
-          double numToDrop = p.getNumResourceCards() / 2.0;
+        // In C&K, commodities count toward hand size for 7-roll discard
+        double handSize = p.getNumResourceCards();
+        if (_ref.getGameSettings().isCitiesAndKnights) {
+          for (double v : p.getCommodities().values()) {
+            handSize += v;
+          }
+        }
+        if (handSize > threshold) {
+          double numToDrop = handSize / 2.0;
           if (!_ref.getGameSettings().isDecimal) {
             numToDrop = Math.floor(numToDrop);
           }
@@ -374,12 +407,9 @@ public class RollDice implements FollowUpAction {
         for (Player p : _ref.getPlayers()) {
           int level = p.getCityImprovement().getLevel(matchTrack);
           if (level >= redDie) {
-            // Check hand limit before drawing (VP cards exempt)
-            if (p.getProgressCards().size() >= Settings.PROGRESS_CARD_MAX_HAND) {
-              continue; // Hand full, skip draw
-            }
             ProgressCard drawn = mr.drawProgressCard(category);
             if (drawn != null) {
+              // addProgressCard enforces hand limit but exempts VP cards
               p.addProgressCard(drawn);
               // If it's a VP card, reveal immediately
               if (drawn.isVictoryPoint()) {

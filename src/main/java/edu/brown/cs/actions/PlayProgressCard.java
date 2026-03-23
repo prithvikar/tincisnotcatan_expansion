@@ -339,7 +339,7 @@ public class PlayProgressCard implements Action {
         for (Player p : _ref.getPlayers()) {
           if (p.getID() != _player.getID()
               && p.numVictoryPoints() >= myVP) {
-            // Discard half (rounded down)
+            // Discard half (rounded down) — count resources + commodities
             int totalCards = 0;
             for (Map.Entry<Resource, Double> entry : p.getResources()
                 .entrySet()) {
@@ -347,8 +347,14 @@ public class PlayProgressCard implements Action {
                 totalCards += (int) Math.floor(entry.getValue());
               }
             }
+            if (_ref.getGameSettings().isCitiesAndKnights) {
+              for (double v : p.getCommodities().values()) {
+                totalCards += (int) Math.floor(v);
+              }
+            }
             int toDiscard = totalCards / 2;
             int discarded = 0;
+            // Discard resources first
             for (Resource r : Resource.values()) {
               if (r == Resource.WILDCARD || discarded >= toDiscard) {
                 break;
@@ -358,6 +364,20 @@ public class PlayProgressCard implements Action {
               if (canRemove > 0) {
                 p.removeResource(r, canRemove);
                 discarded += canRemove;
+              }
+            }
+            // Then discard commodities if still needed
+            if (_ref.getGameSettings().isCitiesAndKnights && discarded < toDiscard) {
+              for (edu.brown.cs.catan.Commodity c : edu.brown.cs.catan.Commodity.values()) {
+                if (discarded >= toDiscard) {
+                  break;
+                }
+                double has = p.getCommodities().getOrDefault(c, 0.0);
+                int canRemove = (int) Math.min(has, toDiscard - discarded);
+                if (canRemove > 0) {
+                  p.removeCommodity(c, canRemove);
+                  discarded += canRemove;
+                }
               }
             }
           }
