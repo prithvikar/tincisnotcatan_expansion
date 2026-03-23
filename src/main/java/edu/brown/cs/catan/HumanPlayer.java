@@ -263,6 +263,12 @@ public class HumanPlayer implements Player {
   }
 
   @Override
+  public void returnCity() {
+    numCities++;
+    numSettlements--;
+  }
+
+  @Override
   public void useSettlement() {
     assert numSettlements > 0;
     numSettlements--;

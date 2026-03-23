@@ -847,10 +847,12 @@ function handleGetGameState(gameStateData) {
 		}
 	}
 
-	// C&K: Show commodity trade tab if player has Trade level >= 3
+	// C&K: Show commodity trade tab if player has Trade level >= 3 OR Merchant Fleet active
 	if (gameSettings.isCitiesAndKnights) {
 		var myPlayer = playersById[playerId];
-		if (myPlayer && myPlayer.cityImprovements && myPlayer.cityImprovements.trade >= 3) {
+		var hasTrade3 = myPlayer && myPlayer.cityImprovements && myPlayer.cityImprovements.trade >= 3;
+		var hasMerchantFleet = gameStateData.merchantFleetActive;
+		if (hasTrade3 || hasMerchantFleet) {
 			$("#commodity-trade-tab-toggle").show();
 		} else {
 			$("#commodity-trade-tab-toggle").hide();

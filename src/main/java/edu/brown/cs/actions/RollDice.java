@@ -122,6 +122,9 @@ public class RollDice implements FollowUpAction {
         for (Tile t : tiles) {
           if (t.getRollNumber() == diceRoll && !t.hasRobber()) {
             Resource tileRes = t.getType().getType();
+            if (tileRes == null) {
+              continue; // DESERT or SEA tile — no resources
+            }
             Commodity commodity = Commodity.fromResource(tileRes);
             if (commodity != null) {
               // This tile produces a commodity — check for cities
@@ -327,11 +330,8 @@ public class RollDice implements FollowUpAction {
                 // Demote one city on the board to a settlement
                 for (Intersection inter : mr.getBoard().getIntersections().values()) {
                   if (inter.demoteToSettlement(p)) {
-                    // Return a city piece and consume a settlement piece
-                    // (useCity adds back a settlement, so we undo that by
-                    // just adjusting the counts directly — but the simplest
-                    // approach: the player effectively gets a city piece back
-                    // and loses a settlement piece)
+                    // Return city piece to supply, consume settlement piece
+                    p.returnCity();
                     msg += String.format(" %s's city was pillaged!", p.getName());
                     // Remove a city wall if the player has one
                     if (p.getCityWallCount() > 0) {

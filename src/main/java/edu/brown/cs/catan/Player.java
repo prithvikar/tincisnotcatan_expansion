@@ -62,6 +62,15 @@ public interface Player {
    */
   void useCity();
 
+  /**
+   * Returns a city piece to the player's supply and consumes a settlement
+   * piece (for barbarian pillage: city demoted back to settlement on board).
+   */
+  default void returnCity() {
+    throw new UnsupportedOperationException(
+        "Not supported for this player type.");
+  }
+
   void useSettlement();
 
   void playDevelopmentCard(DevelopmentCard card);
