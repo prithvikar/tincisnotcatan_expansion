@@ -70,7 +70,6 @@
         </div>
 
 		<div id="turn-display-container"></div>
-<button onclick="debugCK()" style="position:absolute; top:50px; right:300px; z-index:1000; background:red; color:white; padding:5px;">DEBUG C&K</button>
 
 		<input type="button" class="btn btn-primary" id="end-turn-btn" value="End Turn"><br>
 		<div id="chat-container">
@@ -209,6 +208,9 @@
 					</li>
 					<li role="presentation" id="bank-trade-tab-toggle">
 						<a href="#bank-trade-tab" aria-controls="profile" role="tab" data-toggle="tab">Bank</a>
+					</li>
+					<li role="presentation" id="commodity-trade-tab-toggle" style="display:none;">
+						<a href="#commodity-trade-tab" aria-controls="commodities" role="tab" data-toggle="tab">Commodities</a>
 					</li>
 				</ul>
 		    	<div class="tab-content">
@@ -400,6 +402,30 @@
 		    				<div class="col-xs-12 text-center">
 		    					<input type="button" class="btn btn-primary" value="Trade With Bank" id="bank-trade-btn">
 		    				</div>
+		    			</div>
+		    		</div>
+		    		<div role="tabpanel" class="tab-pane text-center" id="commodity-trade-tab">
+		    			<h5>Trade Commodities at 2:1 (Trade Level 3)</h5>
+		    			<p>Give 2 of a commodity, receive 1 resource:</p>
+		    			<div class="row trade-row" style="margin-bottom:8px;">
+		    				<div class="col-xs-4"><strong>Give</strong></div>
+		    				<div class="col-xs-4"><strong>Get</strong></div>
+		    				<div class="col-xs-4"></div>
+		    			</div>
+		    			<div class="row trade-row" style="margin-bottom:4px;">
+		    				<div class="col-xs-4">2 <img src="images/icon-paper.svg" alt="Paper" style="width:20px;"> Paper</div>
+		    				<div class="col-xs-4">1 <img src="images/icon-wood.svg" alt="Wood" style="width:20px;"> Wood</div>
+		    				<div class="col-xs-4"><input type="button" class="btn btn-sm btn-primary commodity-trade-btn" data-give="paper" data-get="wood" value="Trade"></div>
+		    			</div>
+		    			<div class="row trade-row" style="margin-bottom:4px;">
+		    				<div class="col-xs-4">2 <img src="images/icon-cloth.svg" alt="Cloth" style="width:20px;"> Cloth</div>
+		    				<div class="col-xs-4">1 <img src="images/icon-sheep.svg" alt="Sheep" style="width:20px;"> Sheep</div>
+		    				<div class="col-xs-4"><input type="button" class="btn btn-sm btn-primary commodity-trade-btn" data-give="cloth" data-get="sheep" value="Trade"></div>
+		    			</div>
+		    			<div class="row trade-row" style="margin-bottom:4px;">
+		    				<div class="col-xs-4">2 <img src="images/icon-coin.svg" alt="Coin" style="width:20px;"> Coin</div>
+		    				<div class="col-xs-4">1 <img src="images/icon-ore.svg" alt="Ore" style="width:20px;"> Ore</div>
+		    				<div class="col-xs-4"><input type="button" class="btn btn-sm btn-primary commodity-trade-btn" data-give="coin" data-get="ore" value="Trade"></div>
 		    			</div>
 		    		</div>
 		    	</div>

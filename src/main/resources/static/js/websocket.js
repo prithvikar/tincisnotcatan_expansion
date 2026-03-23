@@ -339,6 +339,33 @@ function sendSwapHexNumbersAction(hex1, hex2) {
 	webSocket.send(JSON.stringify(req));
 }
 
+function sendTradeCommodityWithBankAction(toGive, toGet) {
+	var req = {
+		requestType: "action",
+		action: "tradeCommodityWithBank",
+		toGive: toGive,
+		toGet: toGet
+	};
+	webSocket.send(JSON.stringify(req));
+}
+
+function sendCommercialHarborAction() {
+	var req = {
+		requestType: "action",
+		action: "commercialHarbor"
+	};
+	webSocket.send(JSON.stringify(req));
+}
+
+function sendAqueductResourceAction(resource) {
+	var req = {
+		requestType: "action",
+		action: "aqueductResource",
+		resource: resource
+	};
+	webSocket.send(JSON.stringify(req));
+}
+
 function sendChooseResourceAction(resource) {
 	var req = {
 		requestType: "action",
@@ -385,12 +412,13 @@ function sendPlaceMerchantAction(hex) {
 	webSocket.send(JSON.stringify(req));
 }
 
-function sendChooseDiceAction(redDie, whiteDie) {
+function sendChooseDiceAction(redDie, whiteDie, eventDie) {
 	var req = {
 		requestType: "action",
 		action: "chooseDice",
 		redDie: redDie,
-		whiteDie: whiteDie
+		whiteDie: whiteDie,
+		eventDie: eventDie
 	};
 	webSocket.send(JSON.stringify(req));
 }
@@ -673,6 +701,12 @@ function handleFollowUp(action) {
 		case "chooseDice":
 			enterChooseDiceModal();
 			break;
+		case "aqueductResource":
+			enterChooseResourceModal("Aqueduct", "You produced nothing. Choose 1 free resource.", sendAqueductResourceAction);
+			break;
+		case "commercialHarbor":
+			sendCommercialHarborAction();
+			break;
 		default:
 			break;
 	}
@@ -744,18 +778,39 @@ function handleGetGameState(gameStateData) {
 	board.createBoard(gameStateData.board);
 	board.draw();
 
-	// C&K: Update Barbarian Track
+	// C&K: Update Barbarian Track with animation
 	if (gameStateData.hasOwnProperty("barbarianPosition") && gameSettings.isCitiesAndKnights) {
 		var pos = gameStateData.barbarianPosition;
-		// Hide all ships first or just move it
 		$("#barbarian-track-container").removeClass("hidden");
-		$(".track-step").removeClass("active");
 
-		// Ensure pos is valid (0-7)
-		if (pos >= 0 && pos <= 7) {
-			$("#track-step-" + pos).addClass("active");
-			// Move the ship token to the active step
-			$("#track-step-" + pos).append($("#barbarian-ship-token"));
+		var $ship = $("#barbarian-ship-token");
+		var $targetStep = $("#track-step-" + pos);
+
+		if ($targetStep.length && $ship.length) {
+			// Get current and target positions for animation
+			var currentOffset = $ship.offset();
+			var targetOffset = $targetStep.offset();
+
+			if (currentOffset && targetOffset && currentOffset.left !== targetOffset.left) {
+				// Animate the ship sliding to the new position
+				var dx = targetOffset.left - currentOffset.left;
+				var dy = targetOffset.top - currentOffset.top;
+				$ship.css({
+					"position": "relative",
+					"transition": "transform 0.6s ease-in-out"
+				});
+				$ship.css("transform", "translate(" + dx + "px, " + dy + "px)");
+				setTimeout(function () {
+					$ship.css({ "transition": "none", "transform": "none", "position": "" });
+					$(".track-step").removeClass("active");
+					$("#track-step-" + pos).addClass("active");
+					$targetStep.append($ship);
+				}, 650);
+			} else {
+				$(".track-step").removeClass("active");
+				$("#track-step-" + pos).addClass("active");
+				$targetStep.append($ship);
+			}
 		}
 	}
 
@@ -770,6 +825,35 @@ function handleGetGameState(gameStateData) {
 				t.draw(board.transX, board.transY, board.scaleFactor);
 				break;
 			}
+		}
+	}
+
+	// C&K: Show active card effect banners
+	$("#active-effects-bar").remove();
+	if (gameSettings.isCitiesAndKnights && currentPlayerTurn === playerId) {
+		var effects = [];
+		if (gameStateData.medicineActive) {
+			effects.push("<span class='label label-info' style='margin-right:4px;'>Medicine: City costs 1 Ore + 1 Wheat</span>");
+		}
+		if (gameStateData.craneActive) {
+			effects.push("<span class='label label-success' style='margin-right:4px;'>Crane: Improvement -1 commodity</span>");
+		}
+		if (gameStateData.merchantFleetActive) {
+			effects.push("<span class='label label-warning' style='margin-right:4px;'>Merchant Fleet: All trades 2:1</span>");
+		}
+		if (effects.length > 0) {
+			var bar = $("<div id='active-effects-bar' style='text-align:center;padding:4px;background:#f5f5f5;border-bottom:1px solid #ddd;'>" + effects.join("") + "</div>");
+			$("#turn-display-container").after(bar);
+		}
+	}
+
+	// C&K: Show commodity trade tab if player has Trade level >= 3
+	if (gameSettings.isCitiesAndKnights) {
+		var myPlayer = playersById[playerId];
+		if (myPlayer && myPlayer.cityImprovements && myPlayer.cityImprovements.trade >= 3) {
+			$("#commodity-trade-tab-toggle").show();
+		} else {
+			$("#commodity-trade-tab-toggle").hide();
 		}
 	}
 
@@ -891,41 +975,3 @@ function id(id) {
 	return document.getElementById(id);
 }
 
-// DEBUG C&K STATE
-window.debugCK = function () {
-	var mockState = {
-		playerID: 0,
-		currentTurn: 0,
-		settings: { isCitiesAndKnights: true, isDecimal: false },
-		players: [
-			{ id: 0, name: "TestPlayer", color: "#ff0000", victoryPoints: 2, numResourceCards: 5, numDevelopmentCards: 0, numKnights: 3, activeKnightStrength: 3, defenderPoints: 0, cityWalls: 0, cityImprovements: { trade: 1, politics: 2, science: 3 }, numProgressCards: 3 },
-			{ id: 1, name: "AI", color: "#0000ff", victoryPoints: 0, numResourceCards: 0, numDevelopmentCards: 0, numKnights: 0, activeKnightStrength: 0, defenderPoints: 0, cityWalls: 0, cityImprovements: { trade: 0, politics: 0, science: 0 }, numProgressCards: 0 }
-		],
-		hand: {
-			resources: { brick: 0, wood: 0, ore: 0, wheat: 0, sheep: 0 },
-			devCards: { "Knight": 0, "Year of Plenty": 0, "Monopoly": 0, "Road Building": 0, "Victory Point": 0 },
-			commodities: { PAPER: 2, CLOTH: 3, COIN: 4 },
-			progressCards: ["Alchemist", "Bishop", "Merchant"],
-			canBuildRoad: true, canBuildSettlement: true, canBuildCity: true, canBuyDevCard: true
-		},
-		board: {
-			tiles: [
-				{ hexCoordinate: { x: 0, y: 0, z: 0 }, type: "WHEAT", number: 12, hasRobber: false, portLocations: [] },
-				{ hexCoordinate: { x: 1, y: -1, z: 0 }, type: "ORE", number: 8, hasRobber: false, portLocations: [] }
-			],
-			intersections: [
-				{ coordinate: { coord1: { x: 0, y: 0, z: 0 }, coord2: { x: 1, y: 0, z: -1 }, coord3: { x: 1, y: -1, z: 0 } }, building: { type: "knight", player: 0, level: 1, active: true } },
-				{ coordinate: { coord1: { x: 0, y: 0, z: 0 }, coord2: { x: 0, y: -1, z: 1 }, coord3: { x: -1, y: 0, z: 1 } }, building: { type: "knight", player: 0, level: 2, active: false } },
-				{ coordinate: { coord1: { x: 0, y: 0, z: 0 }, coord2: { x: -1, y: 1, z: 0 }, coord3: { x: 0, y: 1, z: -1 } }, building: { type: "knight", player: 0, level: 3, active: true } }
-			],
-			paths: []
-		},
-		stats: { rolls: [], turn: 1 },
-		turnOrder: [0, 1],
-		barbarianPosition: 3,
-		merchantHex: { x: 0, y: 0, z: 0 },
-		merchantOwner: 0
-	};
-	handleGetGameState(mockState);
-	console.log("Injected C&K Mock State");
-};

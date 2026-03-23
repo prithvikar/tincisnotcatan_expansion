@@ -1340,6 +1340,81 @@ function exitRemoveRoadMode() {
 }
 
 /**
+ * Place Knight: enter a mode where the player clicks an intersection to place a knight.
+ */
+var inPlaceKnightMode = false;
+
+function enterPlaceKnightMode() {
+	inPlaceKnightMode = true;
+	addMessage("Click on an intersection adjacent to your city to place a knight.");
+	for (var i = 0; i < board.intersections.length; i++) {
+		var inter = board.intersections[i];
+		if (!inter.building && !inter.knight) {
+			inter.highlight();
+		}
+	}
+}
+
+function exitPlaceKnightMode() {
+	inPlaceKnightMode = false;
+	for (var i = 0; i < board.intersections.length; i++) {
+		if (board.intersections[i].highlighted) {
+			board.intersections[i].unHighlight();
+		}
+	}
+}
+
+/**
+ * Activate Knight: enter a mode where the player clicks one of their inactive knights.
+ */
+var inActivateKnightMode = false;
+
+function enterActivateKnightMode() {
+	inActivateKnightMode = true;
+	addMessage("Click on one of your inactive knights to activate it.");
+	for (var i = 0; i < board.intersections.length; i++) {
+		var inter = board.intersections[i];
+		if (inter.knight && inter.knight.owner === playerId && !inter.knight.active) {
+			inter.highlight();
+		}
+	}
+}
+
+function exitActivateKnightMode() {
+	inActivateKnightMode = false;
+	for (var i = 0; i < board.intersections.length; i++) {
+		if (board.intersections[i].highlighted) {
+			board.intersections[i].unHighlight();
+		}
+	}
+}
+
+/**
+ * Promote Knight: enter a mode where the player clicks one of their knights to promote.
+ */
+var inPromoteKnightMode = false;
+
+function enterPromoteKnightMode() {
+	inPromoteKnightMode = true;
+	addMessage("Click on one of your knights to promote it.");
+	for (var i = 0; i < board.intersections.length; i++) {
+		var inter = board.intersections[i];
+		if (inter.knight && inter.knight.owner === playerId && inter.knight.level < 3) {
+			inter.highlight();
+		}
+	}
+}
+
+function exitPromoteKnightMode() {
+	inPromoteKnightMode = false;
+	for (var i = 0; i < board.intersections.length; i++) {
+		if (board.intersections[i].highlighted) {
+			board.intersections[i].unHighlight();
+		}
+	}
+}
+
+/**
  * Intrigue: enter a mode where the player clicks an opponent's knight to displace.
  */
 var inDisplaceKnightMode = false;
@@ -1591,8 +1666,15 @@ function exitPlaceMerchantMode() {
 /**
  * Alchemist: show a modal where the player picks red die (1-6) and white die (1-6).
  */
+// --- Commodity trade button handler (Trade Level 3) ---
+$(document).on("click", ".commodity-trade-btn", function () {
+	var toGive = $(this).data("give");
+	var toGet = $(this).data("get");
+	sendTradeCommodityWithBankAction(toGive, toGet);
+});
+
 function enterChooseDiceModal() {
-	var bodyHtml = '<p>Choose values for both dice (1-6 each):</p>'
+	var bodyHtml = '<p>Choose values for all three dice (1-6 each):</p>'
 		+ '<div class="form-group"><label>Red Die:</label>'
 		+ '<select id="alchemist-red-die" class="form-control" style="width:80px;display:inline-block;margin-left:8px;">'
 		+ '<option value="1">1</option><option value="2">2</option><option value="3">3</option>'
@@ -1602,6 +1684,11 @@ function enterChooseDiceModal() {
 		+ '<select id="alchemist-white-die" class="form-control" style="width:80px;display:inline-block;margin-left:8px;">'
 		+ '<option value="1">1</option><option value="2">2</option><option value="3">3</option>'
 		+ '<option value="4">4</option><option value="5">5</option><option value="6">6</option>'
+		+ '</select></div>'
+		+ '<div class="form-group"><label>Event Die:</label>'
+		+ '<select id="alchemist-event-die" class="form-control" style="width:120px;display:inline-block;margin-left:8px;">'
+		+ '<option value="1">1 (Ship)</option><option value="2">2 (Ship)</option><option value="3">3 (Ship)</option>'
+		+ '<option value="4">4 (Trade)</option><option value="5">5 (Politics)</option><option value="6">6 (Science)</option>'
 		+ '</select></div>';
 
 	var $modal = createDynamicModal("alchemist-modal", "Alchemist", bodyHtml, "Confirm");
@@ -1611,7 +1698,8 @@ function enterChooseDiceModal() {
 	$("#alchemist-modal-confirm").click(function () {
 		var redDie = parseInt($("#alchemist-red-die").val());
 		var whiteDie = parseInt($("#alchemist-white-die").val());
-		sendChooseDiceAction(redDie, whiteDie);
+		var eventDie = parseInt($("#alchemist-event-die").val());
+		sendChooseDiceAction(redDie, whiteDie, eventDie);
 		$modal.modal("hide");
 	});
 

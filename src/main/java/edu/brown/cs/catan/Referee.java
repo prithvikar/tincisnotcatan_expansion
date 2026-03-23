@@ -77,7 +77,7 @@ public interface Referee {
   HexCoordinate getMerchantHex();
 
   // --- Cities & Knights: Alchemist dice override ---
-  void setOverriddenDice(int red, int white);
+  void setOverriddenDice(int red, int white, int event);
 
   int[] consumeOverriddenDice();
 

@@ -23,6 +23,11 @@ public class Turn {
   private List<Collection<FollowUpAction>> _followUps;
   private Map<DevelopmentCard, Integer> _initialDevCardHand;
 
+  // Cities & Knights per-turn flags
+  private boolean _medicineDiscountActive = false;
+  private boolean _craneDiscountActive = false;
+  private boolean _merchantFleetActive = false;
+
   /**
    * Creates a Turn.
    *
@@ -51,6 +56,9 @@ public class Turn {
     _turnNum = turn.getTurnNum();
     _followUps = turn.getAllFollowUps();
     _initialDevCardHand = new HashMap<>(turn.getInitialDevCards());
+    _medicineDiscountActive = turn.hasMedicineDiscount();
+    _craneDiscountActive = turn.hasCraneDiscount();
+    _merchantFleetActive = turn.hasMerchantFleet();
   }
 
   /* Returns all FollowUps. */
@@ -158,6 +166,32 @@ public class Turn {
    */
   public boolean hadInitialDevCard(DevelopmentCard dev) {
     return _initialDevCardHand.get(dev) > 0;
+  }
+
+  // --- Cities & Knights per-turn flag accessors ---
+
+  public boolean hasMedicineDiscount() {
+    return _medicineDiscountActive;
+  }
+
+  public void setMedicineDiscount(boolean active) {
+    _medicineDiscountActive = active;
+  }
+
+  public boolean hasCraneDiscount() {
+    return _craneDiscountActive;
+  }
+
+  public void setCraneDiscount(boolean active) {
+    _craneDiscountActive = active;
+  }
+
+  public boolean hasMerchantFleet() {
+    return _merchantFleetActive;
+  }
+
+  public void setMerchantFleet(boolean active) {
+    _merchantFleetActive = active;
   }
 
 }

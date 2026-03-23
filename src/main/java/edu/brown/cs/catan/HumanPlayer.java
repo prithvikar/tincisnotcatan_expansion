@@ -392,6 +392,10 @@ public class HumanPlayer implements Player {
 
   @Override
   public void addProgressCard(ProgressCard card) {
+    if (progressCards.size() >= Settings.PROGRESS_CARD_MAX_HAND
+        && !card.isVictoryPoint()) {
+      return; // Hand limit reached; VP cards are revealed immediately so exempt
+    }
     progressCards.add(card);
   }
 

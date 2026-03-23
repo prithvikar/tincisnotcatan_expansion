@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <!-- Aqueduct: Roman-style arches with water channel -->
+  <!-- Left pillar -->
+  <rect x="10" y="35" width="12" height="50" fill="#8D6E63" stroke="#333" stroke-width="2"/>
+  <!-- Center pillar -->
+  <rect x="44" y="35" width="12" height="50" fill="#8D6E63" stroke="#333" stroke-width="2"/>
+  <!-- Right pillar -->
+  <rect x="78" y="35" width="12" height="50" fill="#8D6E63" stroke="#333" stroke-width="2"/>
+  <!-- Left arch -->
+  <path d="M16,55 A18,18 0 0,1 50,55" fill="none" stroke="#333" stroke-width="2.5"/>
+  <!-- Right arch -->
+  <path d="M50,55 A18,18 0 0,1 84,55" fill="none" stroke="#333" stroke-width="2.5"/>
+  <!-- Water channel (top) -->
+  <rect x="5" y="25" width="90" height="12" fill="#8D6E63" stroke="#333" stroke-width="2"/>
+  <!-- Water flowing on top -->
+  <rect x="8" y="22" width="84" height="6" rx="2" fill="#42A5F5" stroke="#1E88E5" stroke-width="1"/>
+  <!-- Water ripple details -->
+  <path d="M15,24 Q22,21 30,24 Q38,27 46,24 Q54,21 62,24 Q70,27 78,24 Q82,22 86,24" fill="none" stroke="#1565C0" stroke-width="1" opacity="0.6"/>
+  <!-- Base -->
+  <line x1="5" y1="85" x2="95" y2="85" stroke="#333" stroke-width="3"/>
+</svg>

@@ -7,22 +7,22 @@ import com.google.gson.JsonObject;
 
 import edu.brown.cs.catan.Player;
 import edu.brown.cs.catan.Referee;
+import edu.brown.cs.catan.Resource;
 
 /**
- * Follow-up action for the Alchemist progress card. The player chooses the
- * values of both dice (1-6 each) before the dice roll occurs.
+ * Follow-up action for the Science Level 3 (Aqueduct) ability. When a player
+ * produces 0 resources on a dice roll, they may choose 1 free resource from
+ * the bank.
  */
-public class ChooseDice implements FollowUpAction {
+public class AqueductResource implements FollowUpAction {
 
     private Referee _ref;
     private int _playerID;
-    private int _redDie;
-    private int _whiteDie;
-    private int _eventDie;
+    private Resource _resource;
     private boolean _isSetup;
-    public static final String ID = "chooseDice";
+    public static final String ID = "aqueductResource";
 
-    public ChooseDice(int playerID) {
+    public AqueductResource(int playerID) {
         _playerID = playerID;
         _isSetup = false;
     }
@@ -33,22 +33,22 @@ public class ChooseDice implements FollowUpAction {
             throw new UnsupportedOperationException("Action must be setup.");
         }
 
-        _ref.setOverriddenDice(_redDie, _whiteDie, _eventDie);
+        Player player = _ref.getPlayerByID(_playerID);
+        player.addResource(_resource, 1.0, _ref.getBank());
+
         _ref.removeFollowUp(this);
 
-        int total = _redDie + _whiteDie;
         Map<Integer, ActionResponse> toRet = new HashMap<>();
-        String playerName = _ref.getPlayerByID(_playerID).getName();
         for (Player p : _ref.getPlayers()) {
             if (p.getID() == _playerID) {
                 toRet.put(p.getID(), new ActionResponse(true,
-                        String.format(
-                                "Alchemist: you chose %d + %d = %d for your dice (event: %d)!",
-                                _redDie, _whiteDie, total, _eventDie),
+                        String.format("Aqueduct: you received 1 %s!",
+                                _resource),
                         null));
             } else {
                 toRet.put(p.getID(), new ActionResponse(true,
-                        playerName + " used the Alchemist to choose their dice roll.",
+                        String.format("%s used Aqueduct to gain a resource.",
+                                player.getName()),
                         null));
             }
         }
@@ -59,7 +59,7 @@ public class ChooseDice implements FollowUpAction {
     public JsonObject getData() {
         JsonObject json = new JsonObject();
         json.addProperty("message",
-                "Choose values for all three dice (1-6 each): red, white, and event.");
+                "Aqueduct: you produced nothing. Choose 1 free resource.");
         return json;
     }
 
@@ -80,24 +80,22 @@ public class ChooseDice implements FollowUpAction {
             throw new IllegalArgumentException("Wrong player ID");
         }
         try {
-            _redDie = json.get("redDie").getAsInt();
-            _whiteDie = json.get("whiteDie").getAsInt();
-            _eventDie = json.has("eventDie") ? json.get("eventDie").getAsInt()
-                    : (new java.util.Random().nextInt(6) + 1);
-            if (_redDie < 1 || _redDie > 6 || _whiteDie < 1
-                    || _whiteDie > 6 || _eventDie < 1 || _eventDie > 6) {
-                throw new IllegalArgumentException("Dice values must be 1-6");
+            String resStr = json.get("resource").getAsString();
+            _resource = Resource.stringToResource(resStr);
+            if (_resource == Resource.WILDCARD) {
+                throw new IllegalArgumentException(
+                        "Cannot choose wildcard resource");
             }
             _isSetup = true;
         } catch (IllegalArgumentException e) {
             throw e;
         } catch (Exception e) {
-            throw new IllegalArgumentException("Invalid dice values");
+            throw new IllegalArgumentException("Invalid resource selection");
         }
     }
 
     @Override
     public String getVerb() {
-        return "choose dice values";
+        return "choose a free resource (Aqueduct)";
     }
 }

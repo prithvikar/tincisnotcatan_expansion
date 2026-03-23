@@ -64,9 +64,13 @@ public class RollDice implements FollowUpAction {
     PrimitiveIterator.OfInt rolls = r.ints(1, 7).iterator();
     int[] override = _ref.consumeOverriddenDice();
     int redDie, whiteDie;
+    int overriddenEventDie = -1; // -1 means no override
     if (override != null) {
       redDie = override[0];
       whiteDie = override[1];
+      if (override.length >= 3) {
+        overriddenEventDie = override[2];
+      }
     } else {
       redDie = rolls.nextInt();
       whiteDie = rolls.nextInt();
@@ -153,6 +157,22 @@ public class RollDice implements FollowUpAction {
           toRet.put(p.getID(), toAdd);
         }
       }
+      // Science Level 3 (Aqueduct): if a player produced 0 resources, they
+      // get to choose 1 free resource from the bank.
+      if (_ref.getGameSettings().isCitiesAndKnights) {
+        for (Player p : _ref.getPlayers()) {
+          if (!playerResourceCount.containsKey(p.getID())
+              || playerResourceCount.get(p.getID()).isEmpty()) {
+            CityImprovement ci = p.getCityImprovement();
+            if (ci != null
+                && ci.getLevel(CityImprovement.Track.SCIENCE) >= 3) {
+              Collection<FollowUpAction> aqueductFollowUp = new ArrayList<>();
+              aqueductFollowUp.add(new AqueductResource(p.getID()));
+              _ref.addFollowUp(aqueductFollowUp);
+            }
+          }
+        }
+      }
     } else {
       // 7 is rolled:
       Map<Integer, Double> playersToDrop = new HashMap<>();
@@ -215,7 +235,8 @@ public class RollDice implements FollowUpAction {
     if (_ref.getGameSettings().isCitiesAndKnights) {
       MasterReferee mr = (MasterReferee) _ref;
       // Roll the event die (1-3: Ship, 4-6: City Gate)
-      int eventRoll = r.nextInt(6) + 1;
+      int eventRoll = (overriddenEventDie >= 1 && overriddenEventDie <= 6)
+          ? overriddenEventDie : r.nextInt(6) + 1;
       String eventDie = "";
       String gateName = ""; // For message display
 
@@ -353,6 +374,10 @@ public class RollDice implements FollowUpAction {
         for (Player p : _ref.getPlayers()) {
           int level = p.getCityImprovement().getLevel(matchTrack);
           if (level >= redDie) {
+            // Check hand limit before drawing (VP cards exempt)
+            if (p.getProgressCards().size() >= Settings.PROGRESS_CARD_MAX_HAND) {
+              continue; // Hand full, skip draw
+            }
             ProgressCard drawn = mr.drawProgressCard(category);
             if (drawn != null) {
               p.addProgressCard(drawn);

@@ -52,6 +52,23 @@ public enum Commodity {
   }
 
   /**
+   * Returns the resource that corresponds to this commodity.
+   * PAPER→WOOD, CLOTH→SHEEP, COIN→ORE.
+   */
+  public Resource toResource() {
+    switch (this) {
+    case PAPER:
+      return Resource.WOOD;
+    case CLOTH:
+      return Resource.SHEEP;
+    case COIN:
+      return Resource.ORE;
+    default:
+      throw new IllegalStateException("Unknown commodity: " + this);
+    }
+  }
+
+  /**
    * Returns the commodity associated with a given resource type. Only Wood,
    * Sheep, and Ore produce commodities.
    *

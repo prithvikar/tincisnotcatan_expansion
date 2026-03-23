@@ -24,6 +24,7 @@ import edu.brown.cs.actions.PlayYearOfPlenty;
 import edu.brown.cs.actions.PromoteKnight;
 import edu.brown.cs.actions.ProposeTrade;
 import edu.brown.cs.actions.StartGame;
+import edu.brown.cs.actions.TradeCommodityWithBank;
 import edu.brown.cs.actions.TradeWithBank;
 import edu.brown.cs.actions.UpdateResource;
 import edu.brown.cs.board.HexCoordinate;
@@ -148,6 +149,8 @@ public class ActionFactory {
         case PlayProgressCard.ID:
           return new PlayProgressCard(_referee, playerID,
               actionJSON.get("card").getAsString());
+        case TradeCommodityWithBank.ID:
+          return new TradeCommodityWithBank(_referee, playerID, actionJSON);
         default:
           String err = String.format("The action %s does not exist.", action);
           throw new IllegalArgumentException(err);

@@ -50,6 +50,11 @@ public class TradeWithBank implements Action {
     // Validation:
     Map<Resource, Double> rates = _ref.getBankRates(_player.getID());
     Double rate = rates.get(_toGive);
+    // Merchant Fleet: override to 2:1 for all resources this turn
+    if (_ref.getTurn().hasMerchantFleet()) {
+      rate = Math.min(rate, 2.0);
+    }
+    // Trade Level 3 commodity trading is handled by TradeCommodityWithBank action.
     if (!_ref.getGameSettings().isDecimal) {
       rate = Math.ceil(rate);
     }

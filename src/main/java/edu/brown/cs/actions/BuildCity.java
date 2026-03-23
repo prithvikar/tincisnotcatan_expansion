@@ -9,7 +9,9 @@ import edu.brown.cs.board.Intersection;
 import edu.brown.cs.board.IntersectionCoordinate;
 import edu.brown.cs.catan.Player;
 import edu.brown.cs.catan.Referee;
+import edu.brown.cs.catan.Resource;
 import edu.brown.cs.catan.Referee.GameStatus;
+import edu.brown.cs.catan.Settings;
 
 /**
  * Action that is responsible for building a city.
@@ -47,10 +49,20 @@ public class BuildCity implements Action {
           "You cannot build when it is not your turn.", null);
       return ImmutableMap.of(_player.getID(), resp);
     }
-    if (!_player.canBuildCity()) {
+    boolean medicineDiscount = _ref.getTurn().hasMedicineDiscount();
+    if (!medicineDiscount && !_player.canBuildCity()) {
       ActionResponse resp = new ActionResponse(false,
           "You cannot afford to buy a City.", null);
       return ImmutableMap.of(_player.getID(), resp);
+    }
+    if (medicineDiscount) {
+      for (Map.Entry<Resource, Double> price : Settings.MEDICINE_CITY_COST.entrySet()) {
+        if (!_player.hasResource(price.getKey(), price.getValue())) {
+          ActionResponse resp = new ActionResponse(false,
+              "You need 1 ore + 1 wheat for Medicine city.", null);
+          return ImmutableMap.of(_player.getID(), resp);
+        }
+      }
     }
     if (_player.numCities() <= 0) {
       ActionResponse resp = new ActionResponse(false,
@@ -64,7 +76,14 @@ public class BuildCity implements Action {
     }
 
     // The Action:
-    _player.buildCity();
+    if (medicineDiscount) {
+      for (Map.Entry<Resource, Double> price : Settings.MEDICINE_CITY_COST.entrySet()) {
+        _player.removeResource(price.getKey(), price.getValue());
+      }
+      _ref.getTurn().setMedicineDiscount(false);
+    } else {
+      _player.buildCity();
+    }
     _player.useCity();
     _intersection.placeCity(_player);
 

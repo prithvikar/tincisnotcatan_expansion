@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <!-- City Wall: a fortified wall section with merlons -->
+  <!-- Wall base -->
+  <rect x="10" y="40" width="80" height="45" fill="#757575" stroke="#333" stroke-width="2"/>
+  <!-- Merlons (crenellations) -->
+  <rect x="10" y="28" width="14" height="14" fill="#757575" stroke="#333" stroke-width="2"/>
+  <rect x="30" y="28" width="14" height="14" fill="#757575" stroke="#333" stroke-width="2"/>
+  <rect x="50" y="28" width="14" height="14" fill="#757575" stroke="#333" stroke-width="2"/>
+  <rect x="70" y="28" width="14" height="14" fill="#757575" stroke="#333" stroke-width="2"/>
+  <!-- Stone lines -->
+  <line x1="10" y1="55" x2="90" y2="55" stroke="#555" stroke-width="1"/>
+  <line x1="10" y1="70" x2="90" y2="70" stroke="#555" stroke-width="1"/>
+  <line x1="50" y1="40" x2="50" y2="55" stroke="#555" stroke-width="1"/>
+  <line x1="30" y1="55" x2="30" y2="70" stroke="#555" stroke-width="1"/>
+  <line x1="70" y1="55" x2="70" y2="70" stroke="#555" stroke-width="1"/>
+  <line x1="50" y1="70" x2="50" y2="85" stroke="#555" stroke-width="1"/>
+  <!-- Base -->
+  <line x1="5" y1="85" x2="95" y2="85" stroke="#333" stroke-width="3"/>
+</svg>

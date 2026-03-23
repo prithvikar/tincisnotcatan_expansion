@@ -198,12 +198,9 @@ public class PlayProgressCard implements Action {
 
       // --- Medicine: build a city for 1 ore + 1 wheat ---
       case MEDICINE:
-        // This modifies the next city cost — store a flag on the player/turn
-        // For now, give player back the normal cost difference
         if (_player.hasResource(Resource.ORE, 1.0)
             && _player.hasResource(Resource.WHEAT, 1.0)) {
-          // Discount: normal city costs 3 ore + 2 wheat, medicine costs 1+1
-          // We'll add a follow-up that builds city at reduced cost
+          _ref.getTurn().setMedicineDiscount(true);
           for (Player p : _ref.getPlayers()) {
             if (p.equals(_player)) {
               toRet.put(p.getID(), new ActionResponse(true,
@@ -246,8 +243,7 @@ public class PlayProgressCard implements Action {
 
       // --- Merchant Fleet: 2:1 trade for rest of turn ---
       case MERCHANT_FLEET:
-        // Flag that the player has a 2:1 trade rate for this turn
-        // This requires modifying getBankRates in MasterReferee for this turn
+        _ref.getTurn().setMerchantFleet(true);
         for (Player p : _ref.getPlayers()) {
           if (p.equals(_player)) {
             toRet.put(p.getID(), new ActionResponse(true,
@@ -262,6 +258,7 @@ public class PlayProgressCard implements Action {
 
       // --- Crane: build city improvement for 1 fewer commodity ---
       case CRANE:
+        _ref.getTurn().setCraneDiscount(true);
         for (Player p : _ref.getPlayers()) {
           if (p.equals(_player)) {
             toRet.put(p.getID(), new ActionResponse(true,
@@ -462,12 +459,14 @@ public class PlayProgressCard implements Action {
         }
         break;
 
-      // --- Commercial Harbor: simplified resource swap with opponents ---
+      // --- Commercial Harbor: each opponent trades 1 commodity for matching resource ---
       case COMMERCIAL_HARBOR:
+        _ref.addFollowUp(
+            ImmutableList.of(new CommercialHarborAction(_player.getID())));
         for (Player p : _ref.getPlayers()) {
           if (p.equals(_player)) {
             toRet.put(p.getID(), new ActionResponse(true,
-                "Commercial Harbor played. Resource trades active.",
+                "Commercial Harbor played. Opponents must trade commodities.",
                 null));
           } else {
             toRet.put(p.getID(),

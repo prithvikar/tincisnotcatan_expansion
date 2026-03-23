@@ -36,6 +36,8 @@ public abstract class Settings {
   // Building costs:
   public final static Map<Resource, Double> CITY_COST = ImmutableMap.of(
       Resource.WHEAT, 2.0, Resource.ORE, 3.0);
+  public final static Map<Resource, Double> MEDICINE_CITY_COST = ImmutableMap.of(
+      Resource.ORE, 1.0, Resource.WHEAT, 1.0);
   public final static Map<Resource, Double> ROAD_COST = ImmutableMap.of(
       Resource.BRICK, 1.0, Resource.WOOD, 1.0);
   public final static Map<Resource, Double> DEV_COST = ImmutableMap.of(

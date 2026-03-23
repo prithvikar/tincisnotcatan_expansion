@@ -70,9 +70,12 @@ public class ImproveCityTrack implements Action {
               null));
     }
 
-    // Check commodity cost
+    // Check commodity cost (Crane card reduces by 1)
     Commodity required = _track.getCommodity();
     int cost = improvement.getCostToAdvance(_track);
+    if (_ref.getTurn().hasCraneDiscount()) {
+      cost = Math.max(0, cost - 1);
+    }
     if (!_player.hasCommodity(required, cost)) {
       return ImmutableMap.of(_player.getID(),
           new ActionResponse(false,
@@ -84,6 +87,11 @@ public class ImproveCityTrack implements Action {
 
     // Pay commodities
     _player.removeCommodity(required, cost);
+
+    // Clear Crane discount after use
+    if (_ref.getTurn().hasCraneDiscount()) {
+      _ref.getTurn().setCraneDiscount(false);
+    }
 
     // Advance track
     improvement.advance(_track);

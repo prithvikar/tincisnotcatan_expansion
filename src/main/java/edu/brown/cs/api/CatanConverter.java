@@ -83,6 +83,10 @@ public class CatanConverter {
     private BarbarianTrackRaw barbarianTrack;
     private Integer merchantOwner;
     private HexCoordinate merchantHex;
+    // Active card effect flags for the current turn's player
+    private Boolean medicineActive;
+    private Boolean craneActive;
+    private Boolean merchantFleetActive;
 
     public GameState(Referee ref, int playerID) {
       this.playerID = playerID;
@@ -111,6 +115,12 @@ public class CatanConverter {
           this.merchantOwner = mr.getMerchantOwner();
           this.merchantHex = mr.getMerchantHex();
         }
+      }
+      // Active card effect flags (only for the requesting player on their turn)
+      if (ref.currentPlayer() != null && ref.currentPlayer().getID() == playerID) {
+        this.medicineActive = ref.getTurn().hasMedicineDiscount();
+        this.craneActive = ref.getTurn().hasCraneDiscount();
+        this.merchantFleetActive = ref.getTurn().hasMerchantFleet();
       }
     }
   }

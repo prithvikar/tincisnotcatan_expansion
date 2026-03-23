@@ -77,10 +77,10 @@ public class ChooseDiceTest {
         // Initially no override
         assertNull(ref.consumeOverriddenDice());
 
-        // Set override
-        ref.setOverriddenDice(2, 6);
+        // Set override (red, white, event)
+        ref.setOverriddenDice(2, 6, 4);
         int[] override = ref.consumeOverriddenDice();
-        assertArrayEquals(new int[] { 2, 6 }, override);
+        assertArrayEquals(new int[] { 2, 6, 4 }, override);
 
         // Should be consumed (null after first consume)
         assertNull(ref.consumeOverriddenDice());
@@ -97,9 +97,12 @@ public class ChooseDiceTest {
         action.setupAction(ref, p1, params);
         action.execute();
 
-        // After execute, the override should be set on the referee
+        // After execute, the override should be set on the referee (3 values: red, white, event)
         int[] override = ref.consumeOverriddenDice();
-        assertArrayEquals(new int[] { 4, 2 }, override);
+        assertEquals(3, override.length);
+        assertEquals(4, override[0]);
+        assertEquals(2, override[1]);
+        assertTrue(override[2] >= 1 && override[2] <= 6);
     }
 
     @Test
