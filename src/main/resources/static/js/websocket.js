@@ -779,8 +779,8 @@ function handleGetGameState(gameStateData) {
 	board.draw();
 
 	// C&K: Update Barbarian Track with animation
-	if (gameStateData.hasOwnProperty("barbarianPosition") && gameSettings.isCitiesAndKnights) {
-		var pos = gameStateData.barbarianPosition;
+	if (gameStateData.barbarianTrack && gameSettings.isCitiesAndKnights) {
+		var pos = gameStateData.barbarianTrack.position;
 		$("#barbarian-track-container").removeClass("hidden");
 
 		var $ship = $("#barbarian-ship-token");
