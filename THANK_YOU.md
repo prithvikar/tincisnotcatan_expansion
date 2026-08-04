@@ -1,0 +1,3 @@
+# A thank you note
+
+Hey Sean, two of my friends and I have been playing Catan almost weekly on tinc.herokuapp.com since March of 2020 during Covid (probably thousands of games - this is not an exaggeration). We cannot express how grateful we are to you for creating and hosting this game because it brought the three of us together in a way that we never foresaw and forged a deeper friendship during a very difficult time. We saw that the herokuapp recently went down and wanted to take this opportunity to say a very heartfelt thank you to you. We really appreciate everything you unknowingly did for us. Thank you so much!!
