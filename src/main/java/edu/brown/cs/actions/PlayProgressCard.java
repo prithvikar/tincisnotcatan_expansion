@@ -464,6 +464,7 @@ public class PlayProgressCard implements Action {
 
       // --- Commercial Harbor: simplified resource swap with opponents ---
       case COMMERCIAL_HARBOR:
+        _ref.addFollowUp(ImmutableList.of(new CommercialHarbor(_player.getID())));
         for (Player p : _ref.getPlayers()) {
           if (p.equals(_player)) {
             toRet.put(p.getID(), new ActionResponse(true,

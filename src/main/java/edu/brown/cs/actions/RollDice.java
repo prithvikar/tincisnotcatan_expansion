@@ -63,13 +63,19 @@ public class RollDice implements FollowUpAction {
     Random r = new Random();
     PrimitiveIterator.OfInt rolls = r.ints(1, 7).iterator();
     int[] override = _ref.consumeOverriddenDice();
-    int redDie, whiteDie;
+    int redDie, whiteDie, eventDieRoll;
     if (override != null) {
       redDie = override[0];
       whiteDie = override[1];
+      if (override.length > 2) {
+        eventDieRoll = override[2];
+      } else {
+        eventDieRoll = r.nextInt(6) + 1;
+      }
     } else {
       redDie = rolls.nextInt();
       whiteDie = rolls.nextInt();
+      eventDieRoll = r.nextInt(6) + 1;
     }
     int diceRoll = redDie + whiteDie;
     _ref.getGameStats().addRoll(diceRoll);
@@ -151,6 +157,13 @@ public class RollDice implements FollowUpAction {
           ActionResponse toAdd = new ActionResponse(true, String.format(
               "%d was rolled.", diceRoll), new HashMap<Resource, Integer>());
           toRet.put(p.getID(), toAdd);
+
+          if (_ref.getGameSettings().isCitiesAndKnights) {
+            CityImprovement ci = p.getCityImprovement();
+            if (ci != null && ci.getLevel(CityImprovement.Track.SCIENCE) >= 3) {
+              _ref.addFollowUp(java.util.Collections.singletonList(new ChooseResource(p.getID(), true)));
+            }
+          }
         }
       }
     } else {
@@ -215,7 +228,7 @@ public class RollDice implements FollowUpAction {
     if (_ref.getGameSettings().isCitiesAndKnights) {
       MasterReferee mr = (MasterReferee) _ref;
       // Roll the event die (1-3: Ship, 4-6: City Gate)
-      int eventRoll = r.nextInt(6) + 1;
+      int eventRoll = eventDieRoll;
       String eventDie = "";
       String gateName = ""; // For message display
 
@@ -355,7 +368,12 @@ public class RollDice implements FollowUpAction {
           if (level >= redDie) {
             ProgressCard drawn = mr.drawProgressCard(category);
             if (drawn != null) {
-              p.addProgressCard(drawn);
+              if (p.getProgressCards().size() < Settings.PROGRESS_CARD_MAX_HAND) {
+                p.addProgressCard(drawn);
+              } else {
+                gateMsg += String.format(" %s's hand is full.", p.getName());
+                continue;
+              }
               // If it's a VP card, reveal immediately
               if (drawn.isVictoryPoint()) {
                 p.addVictoryPoint();

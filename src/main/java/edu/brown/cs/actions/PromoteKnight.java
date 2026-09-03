@@ -69,12 +69,12 @@ public class PromoteKnight implements Action {
     }
 
     // Determine cost and requirements
-    Map<Resource, Double> cost;
+    Map<Resource, Double> cost = new HashMap<>();
     if (target.getLevel() == KnightLevel.BASIC) {
-      cost = Settings.KNIGHT_PROMOTE_STRONG_COST;
+      cost.putAll(Settings.KNIGHT_PROMOTE_STRONG_COST);
     } else {
       // Strong → Mighty requires Politics track level ≥ 3
-      cost = Settings.KNIGHT_PROMOTE_MIGHTY_COST;
+      cost.putAll(Settings.KNIGHT_PROMOTE_MIGHTY_COST);
       CityImprovement improvement = _player.getCityImprovement();
       if (improvement == null
           || improvement.getLevel(CityImprovement.Track.POLITICS) < 3) {
@@ -83,6 +83,11 @@ public class PromoteKnight implements Action {
                 "Promoting to Mighty requires Politics track level 3 or higher.",
                 null));
       }
+    }
+
+    CityImprovement improvement = _player.getCityImprovement();
+    if (improvement != null && improvement.getLevel(CityImprovement.Track.POLITICS) >= 3) {
+      cost.remove(Resource.SHEEP); // Promote without wool
     }
 
     // Check cost

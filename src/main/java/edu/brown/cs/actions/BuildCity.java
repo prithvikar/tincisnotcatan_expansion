@@ -47,16 +47,28 @@ public class BuildCity implements Action {
           "You cannot build when it is not your turn.", null);
       return ImmutableMap.of(_player.getID(), resp);
     }
-    if (!_player.canBuildCity()) {
-      ActionResponse resp = new ActionResponse(false,
-          "You cannot afford to buy a City.", null);
-      return ImmutableMap.of(_player.getID(), resp);
+
+    boolean medicineDiscount = _ref.getTurn().hasMedicineDiscount();
+    if (medicineDiscount) {
+      if (!_player.hasResource(edu.brown.cs.catan.Resource.ORE, 1.0)
+          || !_player.hasResource(edu.brown.cs.catan.Resource.WHEAT, 1.0)) {
+        return ImmutableMap.of(_player.getID(),
+            new ActionResponse(false, "Need 1 ore + 1 wheat for Medicine city.", null));
+      }
+    } else {
+      if (!_player.canBuildCity()) {
+        ActionResponse resp = new ActionResponse(false,
+            "You cannot afford to buy a City.", null);
+        return ImmutableMap.of(_player.getID(), resp);
+      }
     }
+
     if (_player.numCities() <= 0) {
       ActionResponse resp = new ActionResponse(false,
           "You have no cities left.", null);
       return ImmutableMap.of(_player.getID(), resp);
     }
+
     if (!_intersection.canPlaceCity(_player)) {
       ActionResponse resp = new ActionResponse(false,
           "You can only place a city on your own settlement.", null);
@@ -64,7 +76,13 @@ public class BuildCity implements Action {
     }
 
     // The Action:
-    _player.buildCity();
+    if (medicineDiscount) {
+      _player.removeResource(edu.brown.cs.catan.Resource.ORE, 1.0);
+      _player.removeResource(edu.brown.cs.catan.Resource.WHEAT, 1.0);
+      _ref.getTurn().setMedicineDiscount(false);
+    } else {
+      _player.buildCity();
+    }
     _player.useCity();
     _intersection.placeCity(_player);
 

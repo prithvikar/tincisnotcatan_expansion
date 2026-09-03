@@ -40,6 +40,9 @@ public class EndTurn implements Action {
       return ImmutableMap.of(_player.getID(), new ActionResponse(false,
           "It is not your turn.", null));
     }
+    _ref.getTurn().setMedicineDiscount(false);
+    _ref.getTurn().setCraneDiscount(false);
+    _ref.getTurn().setMerchantFleet(false);
     _ref.startNextTurn();
     Player nextPlayer = _ref.currentPlayer();
     if (nextPlayer.getDevCards().get(DevelopmentCard.KNIGHT) != 0) {

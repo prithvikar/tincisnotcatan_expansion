@@ -18,6 +18,7 @@ public class ChooseDice implements FollowUpAction {
     private int _playerID;
     private int _redDie;
     private int _whiteDie;
+    private int _eventDie;
     private boolean _isSetup;
     public static final String ID = "chooseDice";
 
@@ -32,7 +33,7 @@ public class ChooseDice implements FollowUpAction {
             throw new UnsupportedOperationException("Action must be setup.");
         }
 
-        _ref.setOverriddenDice(_redDie, _whiteDie);
+        _ref.setOverriddenDice(_redDie, _whiteDie, _eventDie);
         _ref.removeFollowUp(this);
 
         int total = _redDie + _whiteDie;
@@ -58,7 +59,7 @@ public class ChooseDice implements FollowUpAction {
     public JsonObject getData() {
         JsonObject json = new JsonObject();
         json.addProperty("message",
-                "Choose values for both dice (1-6 each).");
+                "Choose values for both dice (1-6 each) and event die (1-6).");
         return json;
     }
 
@@ -81,8 +82,9 @@ public class ChooseDice implements FollowUpAction {
         try {
             _redDie = json.get("redDie").getAsInt();
             _whiteDie = json.get("whiteDie").getAsInt();
+            _eventDie = json.get("eventDie").getAsInt();
             if (_redDie < 1 || _redDie > 6 || _whiteDie < 1
-                    || _whiteDie > 6) {
+                    || _whiteDie > 6 || _eventDie < 1 || _eventDie > 6) {
                 throw new IllegalArgumentException("Dice values must be 1-6");
             }
             _isSetup = true;

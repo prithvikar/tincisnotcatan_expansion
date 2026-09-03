@@ -21,8 +21,6 @@ import edu.brown.cs.board.Intersection;
 import edu.brown.cs.gamestats.CatanStats;
 import edu.brown.cs.gamestats.GameStats;
 
-import java.util.AbstractMap;
-
 /**
  * An implementation of Referee that can read and write data. There should be
  * one MasterReferee per game. Contains all Catan game data.
@@ -141,8 +139,8 @@ public class MasterReferee implements Referee {
   }
 
   @Override
-  public void setOverriddenDice(int red, int white) {
-    _overriddenDice = new int[] { red, white };
+  public void setOverriddenDice(int red, int white, int event) {
+    _overriddenDice = new int[] { red, white, event };
   }
 
   @Override
@@ -677,7 +675,7 @@ public class MasterReferee implements Referee {
     }
 
     @Override
-    public void setOverriddenDice(int red, int white) {
+    public void setOverriddenDice(int red, int white, int event) {
       throw new UnsupportedOperationException(
           "A ReadOnlyReferee cannot set overridden dice.");
     }

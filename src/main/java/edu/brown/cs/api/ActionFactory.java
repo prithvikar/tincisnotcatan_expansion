@@ -22,6 +22,8 @@ import edu.brown.cs.actions.PlayProgressCard;
 import edu.brown.cs.actions.PlayRoadBuilding;
 import edu.brown.cs.actions.PlayYearOfPlenty;
 import edu.brown.cs.actions.PromoteKnight;
+import edu.brown.cs.actions.ChooseResource;
+import edu.brown.cs.actions.CommercialHarbor;
 import edu.brown.cs.actions.ProposeTrade;
 import edu.brown.cs.actions.StartGame;
 import edu.brown.cs.actions.TradeWithBank;
@@ -58,7 +60,7 @@ public class ActionFactory {
   }
 
   public Action createAction(JsonObject actionJSON)
-    throws WaitingOnActionException {
+      throws WaitingOnActionException {
     int playerID;
     String action;
     try {
@@ -84,73 +86,78 @@ public class ActionFactory {
           }
         }
       }
-      return new EmptyAction(); //Should never be reached
+      return new EmptyAction(); // Should never be reached
     } else {
       try {
         switch (action) {
-        case "getInitialState":
-          return new EmptyAction();
-        case StartGame.ID:
-          return new StartGame(_referee);
-        case BuildCity.ID:
-          return new BuildCity(_referee, playerID,
-              toIntersectionCoordinate(actionJSON.get("coordinate")
-                  .getAsJsonObject()));
-        case BuildSettlement.ID:
-          return new BuildSettlement(_referee, playerID,
-              toIntersectionCoordinate(actionJSON.get("coordinate")
-                  .getAsJsonObject()), true);
-        case BuildRoad.ID:
-          IntersectionCoordinate start = toIntersectionCoordinate(actionJSON
-              .get("start").getAsJsonObject());
-          IntersectionCoordinate end = toIntersectionCoordinate(actionJSON.get(
-              "end").getAsJsonObject());
-          return new BuildRoad(_referee, playerID, start, end, true);
-        case BuyDevelopmentCard.ID:
-          return new BuyDevelopmentCard(_referee, playerID);
-        case PlayMonopoly.ID:
-          return new PlayMonopoly(_referee, playerID, actionJSON
-              .get("resource").getAsString());
-        case PlayYearOfPlenty.ID:
-          return new PlayYearOfPlenty(_referee, playerID, actionJSON);
-        case PlayKnight.ID:
-          return new PlayKnight(_referee, playerID);
-        case PlayRoadBuilding.ID:
-          return new PlayRoadBuilding(_referee, playerID);
-        case TradeWithBank.ID:
-          return new TradeWithBank(_referee, playerID, actionJSON);
-        case EndTurn.ID:
-          return new EndTurn(_referee, playerID);
-        case ProposeTrade.ID:
-          return new ProposeTrade(_referee, playerID, actionJSON);
-        case UpdateResource.ID:
-          return new UpdateResource(_referee, playerID);
-        // --- Cities & Knights actions ---
-        case PlaceKnight.ID:
-          return new PlaceKnight(_referee, playerID,
-              toIntersectionCoordinate(actionJSON.get("coordinate")
-                  .getAsJsonObject()));
-        case ActivateKnight.ID:
-          return new ActivateKnight(_referee, playerID,
-              toIntersectionCoordinate(actionJSON.get("coordinate")
-                  .getAsJsonObject()));
-        case PromoteKnight.ID:
-          return new PromoteKnight(_referee, playerID,
-              toIntersectionCoordinate(actionJSON.get("coordinate")
-                  .getAsJsonObject()));
-        case BuildCityWall.ID:
-          return new BuildCityWall(_referee, playerID,
-              toIntersectionCoordinate(actionJSON.get("coordinate")
-                  .getAsJsonObject()));
-        case ImproveCityTrack.ID:
-          return new ImproveCityTrack(_referee, playerID,
-              actionJSON.get("track").getAsString());
-        case PlayProgressCard.ID:
-          return new PlayProgressCard(_referee, playerID,
-              actionJSON.get("card").getAsString());
-        default:
-          String err = String.format("The action %s does not exist.", action);
-          throw new IllegalArgumentException(err);
+          case "getInitialState":
+            return new EmptyAction();
+          case StartGame.ID:
+            return new StartGame(_referee);
+          case BuildCity.ID:
+            return new BuildCity(_referee, playerID,
+                toIntersectionCoordinate(actionJSON.get("coordinate")
+                    .getAsJsonObject()));
+          case BuildSettlement.ID:
+            return new BuildSettlement(_referee, playerID,
+                toIntersectionCoordinate(actionJSON.get("coordinate")
+                    .getAsJsonObject()),
+                true);
+          case BuildRoad.ID:
+            IntersectionCoordinate start = toIntersectionCoordinate(actionJSON
+                .get("start").getAsJsonObject());
+            IntersectionCoordinate end = toIntersectionCoordinate(actionJSON.get(
+                "end").getAsJsonObject());
+            return new BuildRoad(_referee, playerID, start, end, true);
+          case BuyDevelopmentCard.ID:
+            return new BuyDevelopmentCard(_referee, playerID);
+          case PlayMonopoly.ID:
+            return new PlayMonopoly(_referee, playerID, actionJSON
+                .get("resource").getAsString());
+          case PlayYearOfPlenty.ID:
+            return new PlayYearOfPlenty(_referee, playerID, actionJSON);
+          case PlayKnight.ID:
+            return new PlayKnight(_referee, playerID);
+          case PlayRoadBuilding.ID:
+            return new PlayRoadBuilding(_referee, playerID);
+          case TradeWithBank.ID:
+            return new TradeWithBank(_referee, playerID, actionJSON);
+          case EndTurn.ID:
+            return new EndTurn(_referee, playerID);
+          case ProposeTrade.ID:
+            return new ProposeTrade(_referee, playerID, actionJSON);
+          case UpdateResource.ID:
+            return new UpdateResource(_referee, playerID);
+          case CommercialHarbor.ID:
+            CommercialHarbor chAction = new CommercialHarbor(playerID);
+            chAction.setupAction(_referee, playerID, actionJSON);
+            return chAction;
+          // --- Cities & Knights actions ---
+          case PlaceKnight.ID:
+            return new PlaceKnight(_referee, playerID,
+                toIntersectionCoordinate(actionJSON.get("coordinate")
+                    .getAsJsonObject()));
+          case ActivateKnight.ID:
+            return new ActivateKnight(_referee, playerID,
+                toIntersectionCoordinate(actionJSON.get("coordinate")
+                    .getAsJsonObject()));
+          case PromoteKnight.ID:
+            return new PromoteKnight(_referee, playerID,
+                toIntersectionCoordinate(actionJSON.get("coordinate")
+                    .getAsJsonObject()));
+          case BuildCityWall.ID:
+            return new BuildCityWall(_referee, playerID,
+                toIntersectionCoordinate(actionJSON.get("coordinate")
+                    .getAsJsonObject()));
+          case ImproveCityTrack.ID:
+            return new ImproveCityTrack(_referee, playerID,
+                actionJSON.get("track").getAsString());
+          case PlayProgressCard.ID:
+            return new PlayProgressCard(_referee, playerID,
+                actionJSON.get("card").getAsString());
+          default:
+            String err = String.format("The action %s does not exist.", action);
+            throw new IllegalArgumentException(err);
         }
       } catch (NullPointerException e) {
         e.printStackTrace();

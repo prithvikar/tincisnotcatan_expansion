@@ -1621,3 +1621,42 @@ function enterChooseDiceModal() {
 
 	$modal.modal("show");
 }
+
+/**
+ * Commercial Harbor: show a modal to pick a resource to give or get and its corresponding commodity.
+ */
+function enterCommercialHarborModal() {
+	var bodyHtml = '<p>Choose to trade 1 commodity for its resource or 2 resources for its commodity.</p>'
+		+ '<div class="form-group"><label>Direction:</label>'
+		+ '<select id="ch-direction" class="form-control">'
+		+ '<option value="give">Give 1 Commodity, Get 1 Resource</option>'
+		+ '<option value="get">Give 2 Resources, Get 1 Commodity</option>'
+		+ '</select></div>'
+		+ '<div class="form-group"><label>Exchange Pair:</label>'
+		+ '<select id="ch-pair" class="form-control">'
+		+ '<option value="wood-paper">Wood &harr; Paper</option>'
+		+ '<option value="sheep-cloth">Sheep &harr; Cloth</option>'
+		+ '<option value="ore-coin">Ore &harr; Coin</option>'
+		+ '</select></div>';
+
+	var $modal = createDynamicModal("commercial-harbor-modal", "Commercial Harbor", bodyHtml, "Trade");
+	$("#commercial-harbor-modal-confirm").prop("disabled", false);
+
+	$("#commercial-harbor-modal-confirm").click(function () {
+		var direction = $("#ch-direction").val();
+		var pair = $("#ch-pair").val();
+
+		var giveCommodity = direction === "give";
+		var resource = pair.split("-")[0];
+		var commodity = pair.split("-")[1];
+
+		sendCommercialHarborAction(giveCommodity, resource, commodity);
+		$modal.modal("hide");
+	});
+
+	$modal.on("hidden.bs.modal", function () {
+		$modal.remove();
+	});
+
+	$modal.modal("show");
+}

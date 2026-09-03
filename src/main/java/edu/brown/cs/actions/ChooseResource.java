@@ -19,11 +19,17 @@ public class ChooseResource implements FollowUpAction {
     private int _playerID;
     private Resource _resource;
     private boolean _isSetup;
+    private boolean _isAqueduct;
     public static final String ID = "chooseResource";
 
     public ChooseResource(int playerID) {
+        this(playerID, false);
+    }
+
+    public ChooseResource(int playerID, boolean isAqueduct) {
         _playerID = playerID;
         _isSetup = false;
+        _isAqueduct = isAqueduct;
     }
 
     @Override
@@ -35,34 +41,48 @@ public class ChooseResource implements FollowUpAction {
         Player monopolist = _ref.getPlayerByID(_playerID);
         int totalGained = 0;
 
-        for (Player p : _ref.getPlayers()) {
-            if (p.getID() == _playerID) {
-                continue;
-            }
-            // Each opponent gives up to 2 of the named resource
-            double has = p.getResources().getOrDefault(_resource, 0.0);
-            int toGive = (int) Math.min(has, 2.0);
-            if (toGive > 0) {
-                p.removeResource(_resource, toGive);
-                monopolist.addResource(_resource, toGive);
-                totalGained += toGive;
-            }
-        }
-
         _ref.removeFollowUp(this);
 
         Map<Integer, ActionResponse> toRet = new HashMap<>();
-        for (Player p : _ref.getPlayers()) {
-            if (p.getID() == _playerID) {
-                toRet.put(p.getID(), new ActionResponse(true,
-                        String.format("Resource Monopoly: you gained %d %s!",
-                                totalGained, _resource),
-                        null));
-            } else {
-                toRet.put(p.getID(), new ActionResponse(true,
-                        String.format("%s played Resource Monopoly on %s.",
-                                monopolist.getName(), _resource),
-                        null));
+
+        if (_isAqueduct) {
+            monopolist.addResource(_resource, 1.0, _ref.getBank());
+            for (Player p : _ref.getPlayers()) {
+                if (p.getID() == _playerID) {
+                    toRet.put(p.getID(), new ActionResponse(true,
+                            String.format("Aqueduct: you gained 1 %s!", _resource), null));
+                } else {
+                    toRet.put(p.getID(), new ActionResponse(true,
+                            String.format("%s used Aqueduct and gained a resource.", monopolist.getName()), null));
+                }
+            }
+        } else {
+            for (Player p : _ref.getPlayers()) {
+                if (p.getID() == _playerID) {
+                    continue;
+                }
+                // Each opponent gives up to 2 of the named resource
+                double has = p.getResources().getOrDefault(_resource, 0.0);
+                int toGive = (int) Math.min(has, 2.0);
+                if (toGive > 0) {
+                    p.removeResource(_resource, toGive);
+                    monopolist.addResource(_resource, toGive);
+                    totalGained += toGive;
+                }
+            }
+
+            for (Player p : _ref.getPlayers()) {
+                if (p.getID() == _playerID) {
+                    toRet.put(p.getID(), new ActionResponse(true,
+                            String.format("Resource Monopoly: you gained %d %s!",
+                                    totalGained, _resource),
+                            null));
+                } else {
+                    toRet.put(p.getID(), new ActionResponse(true,
+                            String.format("%s played Resource Monopoly on %s.",
+                                    monopolist.getName(), _resource),
+                            null));
+                }
             }
         }
         return toRet;
@@ -71,8 +91,11 @@ public class ChooseResource implements FollowUpAction {
     @Override
     public JsonObject getData() {
         JsonObject json = new JsonObject();
-        json.addProperty("message",
-                "Choose a resource. Each opponent gives you up to 2.");
+        if (_isAqueduct) {
+            json.addProperty("message", "Aqueduct: Choose 1 resource from the bank.");
+        } else {
+            json.addProperty("message", "Choose a resource. Each opponent gives you up to 2.");
+        }
         return json;
     }
 

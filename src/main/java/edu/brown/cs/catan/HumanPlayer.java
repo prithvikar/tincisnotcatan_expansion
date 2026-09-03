@@ -45,11 +45,11 @@ public class HumanPlayer implements Player {
    * Creates a HumanPlayer (CatanPlayer)
    *
    * @param id
-   *          Unique player ID
+   *              Unique player ID
    * @param name
-   *          Player's name or username
+   *              Player's name or username
    * @param color
-   *          Player's color, represented as a hex string.
+   *              Player's color, represented as a hex string.
    */
   public HumanPlayer(int id, String name, String color) {
     this.name = name;
@@ -392,6 +392,9 @@ public class HumanPlayer implements Player {
 
   @Override
   public void addProgressCard(ProgressCard card) {
+    if (progressCards.size() >= Settings.PROGRESS_CARD_MAX_HAND) {
+      return;
+    }
     progressCards.add(card);
   }
 

@@ -35,7 +35,7 @@ public class ChooseDiceTest {
     public void testWrongPlayerSetup() {
         Referee ref = setupGame();
         ChooseDice action = new ChooseDice(0);
-        JsonObject params = makeDiceParams(3, 4);
+        JsonObject params = makeDiceParams(3, 4, 1);
         action.setupAction(ref, 1, params);
     }
 
@@ -43,7 +43,7 @@ public class ChooseDiceTest {
     public void testInvalidDiceTooLow() {
         Referee ref = setupGame();
         ChooseDice action = new ChooseDice(0);
-        JsonObject params = makeDiceParams(0, 4);
+        JsonObject params = makeDiceParams(0, 4, 1);
         action.setupAction(ref, 0, params);
     }
 
@@ -51,7 +51,7 @@ public class ChooseDiceTest {
     public void testInvalidDiceTooHigh() {
         Referee ref = setupGame();
         ChooseDice action = new ChooseDice(0);
-        JsonObject params = makeDiceParams(3, 7);
+        JsonObject params = makeDiceParams(3, 7, 1);
         action.setupAction(ref, 0, params);
     }
 
@@ -62,7 +62,7 @@ public class ChooseDiceTest {
 
         ChooseDice action = new ChooseDice(p1);
         ref.addFollowUp(Collections.singletonList(action));
-        JsonObject params = makeDiceParams(3, 5);
+        JsonObject params = makeDiceParams(3, 5, 2);
         action.setupAction(ref, p1, params);
 
         Map<Integer, ActionResponse> result = action.execute();
@@ -78,9 +78,9 @@ public class ChooseDiceTest {
         assertNull(ref.consumeOverriddenDice());
 
         // Set override
-        ref.setOverriddenDice(2, 6);
+        ref.setOverriddenDice(2, 6, 4);
         int[] override = ref.consumeOverriddenDice();
-        assertArrayEquals(new int[] { 2, 6 }, override);
+        assertArrayEquals(new int[] { 2, 6, 4 }, override);
 
         // Should be consumed (null after first consume)
         assertNull(ref.consumeOverriddenDice());
@@ -93,13 +93,13 @@ public class ChooseDiceTest {
 
         ChooseDice action = new ChooseDice(p1);
         ref.addFollowUp(Collections.singletonList(action));
-        JsonObject params = makeDiceParams(4, 2);
+        JsonObject params = makeDiceParams(4, 2, 3);
         action.setupAction(ref, p1, params);
         action.execute();
 
         // After execute, the override should be set on the referee
         int[] override = ref.consumeOverriddenDice();
-        assertArrayEquals(new int[] { 4, 2 }, override);
+        assertArrayEquals(new int[] { 4, 2, 3 }, override);
     }
 
     @Test
@@ -116,10 +116,11 @@ public class ChooseDiceTest {
         assertTrue(data.get("message").getAsString().contains("1-6"));
     }
 
-    private JsonObject makeDiceParams(int red, int white) {
+    private JsonObject makeDiceParams(int red, int white, int event) {
         JsonObject params = new JsonObject();
         params.addProperty("redDie", red);
         params.addProperty("whiteDie", white);
+        params.addProperty("eventDie", event);
         return params;
     }
 }

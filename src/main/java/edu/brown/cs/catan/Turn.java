@@ -22,14 +22,41 @@ public class Turn {
   private final int _turnNum;
   private List<Collection<FollowUpAction>> _followUps;
   private Map<DevelopmentCard, Integer> _initialDevCardHand;
+  private boolean _medicineDiscountActive;
+  private boolean _craneDiscountActive;
+  private boolean _merchantFleetActive;
+
+  public boolean hasMedicineDiscount() {
+    return _medicineDiscountActive;
+  }
+
+  public void setMedicineDiscount(boolean v) {
+    _medicineDiscountActive = v;
+  }
+
+  public boolean hasCraneDiscount() {
+    return _craneDiscountActive;
+  }
+
+  public void setCraneDiscount(boolean v) {
+    _craneDiscountActive = v;
+  }
+
+  public boolean hasMerchantFleet() {
+    return _merchantFleetActive;
+  }
+
+  public void setMerchantFleet(boolean v) {
+    _merchantFleetActive = v;
+  }
 
   /**
    * Creates a Turn.
    *
    * @param turnNum
-   *          The turn number
+   *                           The turn number
    * @param initialDevCardHand
-   *          The player's initial development card hand.
+   *                           The player's initial development card hand.
    */
   public Turn(int turnNum, Map<DevelopmentCard, Integer> initialDevCardHand) {
     _timeStarted = System.currentTimeMillis();
@@ -37,13 +64,16 @@ public class Turn {
     _turnNum = turnNum;
     _followUps = new ArrayList<>();
     _initialDevCardHand = new HashMap<>(initialDevCardHand);
+    _medicineDiscountActive = false;
+    _craneDiscountActive = false;
+    _merchantFleetActive = false;
   }
 
   /**
    * Creates a copy of a Turn.
    *
    * @param turn
-   *          the Turn to copy.
+   *             the Turn to copy.
    */
   private Turn(Turn turn) {
     _timeStarted = turn.getTimeStarted();
@@ -51,6 +81,9 @@ public class Turn {
     _turnNum = turn.getTurnNum();
     _followUps = turn.getAllFollowUps();
     _initialDevCardHand = new HashMap<>(turn.getInitialDevCards());
+    _medicineDiscountActive = turn.hasMedicineDiscount();
+    _craneDiscountActive = turn.hasCraneDiscount();
+    _merchantFleetActive = turn.hasMerchantFleet();
   }
 
   /* Returns all FollowUps. */
@@ -87,7 +120,7 @@ public class Turn {
    * Returns the next FollowUpAction for a given player.
    *
    * @param playerID
-   *          The players id
+   *                 The players id
    * @return The Action that must be performed.
    */
   public FollowUpAction getNextFollowUp(int playerID) {
@@ -106,7 +139,7 @@ public class Turn {
    * Removes a FollowUp.
    *
    * @param action
-   *          The FollowUpAction to remove.
+   *               The FollowUpAction to remove.
    */
   public void removeFollowUp(FollowUpAction action) {
     Collection<FollowUpAction> curr = _followUps.get(0);
@@ -153,7 +186,7 @@ public class Turn {
    * the turn started.
    *
    * @param dev
-   *          The DevelopmentCard
+   *            The DevelopmentCard
    * @return Whether the player had the development card.
    */
   public boolean hadInitialDevCard(DevelopmentCard dev) {
