@@ -954,7 +954,7 @@
         		<h4 class="modal-title" id="duplicateTabLabel">Multiple Tabs Open</h4>
       		</div>
       		<div class="modal-body">
-      			<p>We noticed that you already have an open tab with an active Catan game. The same game of Catan will not work across multiple tabs, please exit this tab and continue the game in your other active tab.</p>
+      			<p>This game was opened in a newer tab or window, so this tab has been disconnected. Please close this tab and continue playing in the newest one.</p>
       		</div>
     	</div>
 	</div>

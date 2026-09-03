@@ -35,8 +35,16 @@ function deleteAllCookiesAndGoHome() {
 	window.location = "/home";
 }
 
+// Set when the server tells us a newer tab has taken over this game;
+// this tab must stay dead instead of reloading and stealing the
+// connection back (which would make the two tabs fight forever).
+var supersededByOtherTab = false;
+
 // Actions to be taken when websocket is closed
 webSocket.onclose = function () {
+	if (supersededByOtherTab) {
+		return;
+	}
 	if (document.cookie.indexOf("USER_ID") > -1) {
 		window.location.reload(true);
 	} else {
@@ -385,12 +393,24 @@ function sendPlaceMerchantAction(hex) {
 	webSocket.send(JSON.stringify(req));
 }
 
-function sendChooseDiceAction(redDie, whiteDie) {
+function sendChooseDiceAction(redDie, whiteDie, eventDie) {
 	var req = {
 		requestType: "action",
 		action: "chooseDice",
 		redDie: redDie,
-		whiteDie: whiteDie
+		whiteDie: whiteDie,
+		eventDie: eventDie
+	};
+	webSocket.send(JSON.stringify(req));
+}
+
+function sendCommercialHarborAction(giveCommodity, resource, commodity) {
+	var req = {
+		requestType: "action",
+		action: "commercialHarbor",
+		giveCommodity: giveCommodity,
+		resource: resource,
+		commodity: commodity
 	};
 	webSocket.send(JSON.stringify(req));
 }
@@ -673,6 +693,9 @@ function handleFollowUp(action) {
 		case "chooseDice":
 			enterChooseDiceModal();
 			break;
+		case "commercialHarbor":
+			enterCommercialHarborModal();
+			break;
 		default:
 			break;
 	}
@@ -843,6 +866,7 @@ function handleErrorFromSocket(data) {
 				$("#full-game-modal").modal("show");
 				break;
 			case "DUPLICATE_TAB":
+				supersededByOtherTab = true;
 				$("#duplicate-tab-modal").modal("show");
 				break;
 			default:

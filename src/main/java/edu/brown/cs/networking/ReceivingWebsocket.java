@@ -50,13 +50,23 @@ public class ReceivingWebsocket {
       return;
     }
     User u = userForSession(s);
-    if (u != null) { // existing user with old session, update it.
-      if (!u.updateSession(s)) {
-        // tried to update an open session - TWO TAB MOFO
-        ignoreSession.add(s);
-        this.sendError(s, "DUPLICATE_TAB");
-        return;
+    if (u != null) { // existing user reconnecting, or a second tab.
+      // Newest connection wins. A half-open stale session (e.g. after a
+      // silent network drop) still reports isOpen(), so rejecting the new
+      // connection here strands real players behind a DUPLICATE_TAB error.
+      Session old = u.session();
+      if (old != null && old != s && old.isOpen()) {
+        // retire the old session so its close event doesn't disconnect
+        // the user from their game
+        ignoreSession.add(old);
+        this.sendError(old, "DUPLICATE_TAB");
+        try {
+          old.close();
+        } catch (Exception e) {
+          // half-open session; nothing left to close
+        }
       }
+      u.updateSession(s);
     } else {
       u = createNewUser(s);
     }

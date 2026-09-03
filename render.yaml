@@ -1,0 +1,7 @@
+services:
+  - type: web
+    name: tinc
+    runtime: docker
+    plan: free
+    healthCheckPath: /home
+    autoDeploy: true
